@@ -1,0 +1,6 @@
+[theme]
+primaryColor = "#0B2F7A"             # Buttons, highlights, main accents
+backgroundColor = "#FFFFFF"          # App background
+secondaryBackgroundColor = "#F8F9FA" # Cards, panels, secondary containers
+textColor = "#0B2F7A"                # Default text color
+font = "sans serif"                   # Clean modern font

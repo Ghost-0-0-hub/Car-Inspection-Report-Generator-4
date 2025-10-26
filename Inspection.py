@@ -16,12 +16,30 @@ st.title("🚘 CAROBAR Inspection Form")
 # --- LIGHT THEME CSS ---
 st.markdown("""
 <style>
+/* App and Sidebar Colors */
 [data-testid="stAppViewContainer"] {background-color: #FFFFFF;}
 [data-testid="stSidebar"] {background-color: #F8F9FA;}
 [data-testid="stAppViewContainer"] {color: #0B2F7A;}
-.stButton>button {background-color: #0B2F7A; color: white; font-weight: bold;}
+
+/* Submit Button - Green */
+.stButton>button {
+    background-color: #28a745;  /* Green */
+    color: white;
+    font-weight: bold;
+}
+
+/* Optional: Hover effect for button */
+.stButton>button:hover {
+    background-color: #218838;
+}
 </style>
+
+<!-- Title with green O -->
+<h1 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+🚘 CAR<span style="color:#00B050;">O</span>BAR Inspection Form
+</h1>
 """, unsafe_allow_html=True)
+
 
 # -------------------------------
 # 1️⃣ Basic Information / Car Details

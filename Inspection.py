@@ -68,25 +68,39 @@ with st.expander("Brakes & Suspension"):
     with col3:
         steering_condition = st.selectbox("Steering Condition", ["Excellent", "Good", "Average", "Poor"])
 
-# 4️⃣ Tires & Wheels / Car Body Evaluation (UPDATED)
+# 4️⃣ Tires & Wheels / Car Body Evaluation
 with st.expander("Tires & Wheels / Car Body"):
     col1, col2 = st.columns(2)
+
     with col1:
-        tire_condition = st.selectbox("Tire Condition", ["Excellent", "Good", "Average", "Poor"])
-        car_diagram = st.file_uploader("Upload Car Diagram (if any)", type=["png","jpg","jpeg"])
-    with col2:
+        st.markdown("### Tire Condition (%)")
+        tire_front_left = st.number_input("Front Left Tire", min_value=0, max_value=100, step=1)
+        tire_front_right = st.number_input("Front Right Tire", min_value=0, max_value=100, step=1)
+        tire_rear_left = st.number_input("Rear Left Tire", min_value=0, max_value=100, step=1)
+        tire_rear_right = st.number_input("Rear Right Tire", min_value=0, max_value=100, step=1)
+
         wheel_condition = st.selectbox("Wheel Condition", ["Excellent", "Good", "Average", "Poor"])
-        st.markdown("**Car Body Evaluation Table**")
-        evaluation_data = []
-        for i in range(5):  # 5 rows
-            col_tire, col_code, col_desc = st.columns([1,1,3])
-            with col_tire:
-                tire_percent = st.text_input(f"% Tire {i+1}", key=f"tire{i}")
-            with col_code:
-                code = st.text_input(f"Code {i+1}", key=f"code{i}")
-            with col_desc:
-                desc = st.text_input(f"Description {i+1}", key=f"desc{i}")
-            evaluation_data.append({"Tire %": tire_percent, "Code": code, "Description": desc})
+
+        car_diagram = st.file_uploader("Upload Car Diagram (if any)", type=["png", "jpg", "jpeg"])
+
+    with col2:
+        st.markdown("### Car Body Evaluation Codes")
+        # All codes with optional notes
+        codes = {}
+        for code, desc in [
+            ("A1", "Minor Scratch"),
+            ("A2", "Major or Multiple Scratches"),
+            ("E1", "Minor Dent"),
+            ("E2", "Major or Multiple Dents"),
+            ("P", "Paint Spray Only"),
+            ("T", "TOTAL Genuine"),
+            ("G1", "Glass Scratches"),
+            ("G4", "Glass Chipped"),
+            ("W", "Repaired with Dry Denting")
+        ]:
+            checked = st.checkbox(f"{code} - {desc}")
+            note = st.text_input(f"Notes for {code}", "")
+            codes[code] = {"checked": checked, "note": note}
 
 # 5️⃣ Lights & Electricals
 with st.expander("Lights & Electricals"):
@@ -135,8 +149,8 @@ with st.expander("Additional Comments / Photos"):
     comments = st.text_area("Additional Comments", height=120, placeholder="Add extra notes here...")
     photos = st.file_uploader("Upload Car Photos", accept_multiple_files=True, type=["png", "jpg", "jpeg"])
 
-# --- PDF GENERATION FUNCTION (UPDATED) ---
-def generate_pdf(data, evaluation_data, car_diagram, photos):
+# --- PDF GENERATION FUNCTION ---
+def generate_pdf(data, tire_data, codes, car_diagram, photos):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
@@ -151,15 +165,16 @@ def generate_pdf(data, evaluation_data, car_diagram, photos):
     pdf.set_font("Arial", "B", 12)
     pdf.cell(0, 8, "Basic Information", ln=True, fill=True)
     pdf.set_font("Arial", "", 12)
-    for key in ["Owner Name", "Make", "Car Model", "Model Year", "Variant", "Registration Year",
-                "Mileage", "Colour", "Transmission", "Fuel Type", "Registration Type",
-                "Registration City", "Location", "Import Status From", "Number of Seats", "Number of Doors",
-                "License Plate"]:
-        value = str(data.get(key, "N/A"))
-        pdf.cell(0, 8, f"{key}: {value}", ln=True)
+    for key in [
+        "Owner Name", "Make", "Car Model", "Model Year", "Variant", "Registration Year",
+        "Mileage", "Colour", "Transmission", "Fuel Type", "Registration Type",
+        "Registration City", "Location", "Import Status From", "Number of Seats",
+        "Number of Doors", "License Plate"
+    ]:
+        pdf.cell(0, 8, f"{key}: {data.get(key,'N/A')}", ln=True)
 
     # --- Car Diagram ---
-    if car_diagram is not None:
+    if car_diagram:
         pdf.ln(5)
         pdf.set_font("Arial", "B", 12)
         pdf.cell(0, 8, "Car Diagram", ln=True)
@@ -170,24 +185,36 @@ def generate_pdf(data, evaluation_data, car_diagram, photos):
     pdf.set_font("Arial", "B", 12)
     pdf.set_fill_color(200, 220, 255)
     pdf.cell(0, 8, "Car Body Evaluation", ln=True, fill=True)
+
     pdf.set_font("Arial", "B", 12)
     pdf.cell(30, 8, "Tire %", border=1)
     pdf.cell(30, 8, "Code", border=1)
-    pdf.cell(120, 8, "Description", border=1)
+    pdf.cell(120, 8, "Description / Notes", border=1)
     pdf.ln()
     pdf.set_font("Arial", "", 12)
-    for row in evaluation_data:
-        pdf.cell(30, 8, row["Tire %"], border=1)
-        pdf.cell(30, 8, row["Code"], border=1)
-        pdf.cell(120, 8, row["Description"], border=1)
+
+    # Tire % rows
+    for pos, value in tire_data.items():
+        pdf.cell(30, 8, str(value), border=1)
+        pdf.cell(30, 8, "Tire", border=1)
+        pdf.cell(120, 8, pos, border=1)
+        pdf.ln()
+
+    # Evaluation codes
+    for code, info in codes.items():
+        pdf.cell(30, 8, "-", border=1)
+        pdf.cell(30, 8, code, border=1)
+        pdf.cell(120, 8, f"{'Yes' if info['checked'] else 'No'} | Notes: {info['note']}", border=1)
         pdf.ln()
 
     # --- Other Sections ---
     for section, content in data.items():
-        if section in ["Owner Name", "Make", "Car Model", "Model Year", "Variant", "Registration Year",
-                       "Mileage", "Colour", "Transmission", "Fuel Type", "Registration Type",
-                       "Registration City", "Location", "Import Status From", "Number of Seats", "Number of Doors",
-                       "License Plate"]:
+        if section in [
+            "Owner Name", "Make", "Car Model", "Model Year", "Variant", "Registration Year",
+            "Mileage", "Colour", "Transmission", "Fuel Type", "Registration Type",
+            "Registration City", "Location", "Import Status From", "Number of Seats",
+            "Number of Doors", "License Plate"
+        ]:
             continue
         pdf.ln(5)
         pdf.set_font("Arial", "B", 12)
@@ -215,68 +242,63 @@ if st.button("Submit Inspection"):
             st.warning("⚠️ Please fill in at least Owner Name and Car Model before submitting.")
             st.stop()
 
-        data = {
-            # Basic Info
-            "Owner Name": owner_name,
-            "Make": make,
-            "Car Model": car_model,
-            "Model Year": model_year,
-            "Variant": variant,
-            "Registration Year": registration_year,
-            "Mileage": mileage,
-            "Colour": colour,
-            "Transmission": transmission,
-            "Fuel Type": fuel_type,
-            "Registration Type": registration_type,
-            "Registration City": registration_city,
-            "Location": location,
-            "Import Status From": import_status,
-            "Number of Seats": number_of_seats,
-            "Number of Doors": number_of_doors,
-            "License Plate": license_plate,
-
-            # Sections
-            "Engine & Transmission": {
-                "Engine Condition": engine_condition,
-                "Transmission Condition": transmission_condition,
-                "Oil Leaks": oil_leaks,
-            },
-            "Brakes & Suspension": {
-                "Brakes Condition": brakes_condition,
-                "Suspension Condition": suspension_condition,
-                "Steering Condition": steering_condition,
-            },
-            "Tires & Wheels / Car Body": {
-                "Tire Condition": tire_condition,
-                "Wheel Condition": wheel_condition,
-            },
-            "Lights & Electricals": {
-                "Headlights": headlight_condition,
-                "Indicators": indicator_condition,
-                "Battery Condition": battery_condition,
-                "Accessories Checked": accessories,
-                "Test Drive": test_drive
-            },
-            "Interior & Exterior": {
-                "Interior Condition": interior_condition,
-                "Exterior Condition": exterior_condition,
-                "Paint Condition": paint_condition,
-            },
-            "Safety & Features": {
-                "Airbags Functional": airbags,
-                "AC Condition": ac_condition,
-                "Infotainment System": infotainment,
-            },
-            "Documents": {
-                "Original Book": original_book,
-                "Original Card": original_card,
-                "Original File": original_file,
-                "Number Plate Condition": number_plate_condition
-            },
-            "Additional Comments": {"Comments": comments},
+        # Data dictionaries
+        tire_data = {
+            "Front Left": tire_front_left,
+            "Front Right": tire_front_right,
+            "Rear Left": tire_rear_left,
+            "Rear Right": tire_rear_right
         }
 
-        pdf_bytes = generate_pdf(data, evaluation_data, car_diagram, photos)
+        pdf_bytes = generate_pdf(
+            data={
+                "Owner Name": owner_name, "Make": make, "Car Model": car_model,
+                "Model Year": model_year, "Variant": variant, "Registration Year": registration_year,
+                "Mileage": mileage, "Colour": colour, "Transmission": transmission,
+                "Fuel Type": fuel_type, "Registration Type": registration_type,
+                "Registration City": registration_city, "Location": location,
+                "Import Status From": import_status, "Number of Seats": number_of_seats,
+                "Number of Doors": number_of_doors, "License Plate": license_plate,
+                "Engine & Transmission": {
+                    "Engine Condition": engine_condition,
+                    "Transmission Condition": transmission_condition,
+                    "Oil Leaks": oil_leaks
+                },
+                "Brakes & Suspension": {
+                    "Brakes Condition": brakes_condition,
+                    "Suspension Condition": suspension_condition,
+                    "Steering Condition": steering_condition
+                },
+                "Lights & Electricals": {
+                    "Headlights": headlight_condition,
+                    "Indicators": indicator_condition,
+                    "Battery Condition": battery_condition,
+                    "Accessories Checked": accessories,
+                    "Test Drive": test_drive
+                },
+                "Interior & Exterior": {
+                    "Interior Condition": interior_condition,
+                    "Exterior Condition": exterior_condition,
+                    "Paint Condition": paint_condition
+                },
+                "Safety & Features": {
+                    "Airbags Functional": airbags,
+                    "AC Condition": ac_condition,
+                    "Infotainment System": infotainment
+                },
+                "Documents": {
+                    "Original Book": original_book,
+                    "Original Card": original_card,
+                    "Original File": original_file,
+                    "Number Plate Condition": number_plate_condition
+                },
+                "Additional Comments": {"Comments": comments}
+            },
+            tire_data=tire_data,
+            codes=codes,
+            car_diagram=car_diagram,
+            photos=photos
+        )
 
         safe_owner = owner_name.replace("/", "_") or "Unknown"
         safe_model = car_model.replace("/", "_") or "Unknown"

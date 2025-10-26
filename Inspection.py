@@ -11,8 +11,6 @@ st.set_page_config(
     page_icon="🚘",
     layout="wide"
 )
-st.title("🚘 CAROBAR Inspection Form")
-
 # --- LIGHT THEME CSS ---
 st.markdown("""
 <style>

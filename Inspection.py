@@ -68,7 +68,7 @@ with st.expander("Brakes & Suspension"):
     with col3:
         steering_condition = st.selectbox("Steering Condition", ["Excellent", "Good", "Average", "Poor"])
 
-# 4️⃣ Tires & Wheels / Car Body Evaluation
+# 4️⃣ Tires & Wheels / Car Body Evaluation (UPDATED)
 with st.expander("Tires & Wheels / Car Body"):
     col1, col2 = st.columns(2)
     with col1:
@@ -76,7 +76,17 @@ with st.expander("Tires & Wheels / Car Body"):
         car_diagram = st.file_uploader("Upload Car Diagram (if any)", type=["png","jpg","jpeg"])
     with col2:
         wheel_condition = st.selectbox("Wheel Condition", ["Excellent", "Good", "Average", "Poor"])
-        st.text_area("Car Body Evaluation Codes:\n% Tire\nA1 - Minor Scratch\nA2 - Major Scratches\nE1 - Minor Dent\nE2 - Major Dents\nP - Paint Spray Only\nT - TOTAL Genuine\nG1 - Glass Scratches\nG4 - Glass Chipped\nW - Repaired with Dry Denting", height=150)
+        st.markdown("**Car Body Evaluation Table**")
+        evaluation_data = []
+        for i in range(5):  # 5 rows
+            col_tire, col_code, col_desc = st.columns([1,1,3])
+            with col_tire:
+                tire_percent = st.text_input(f"% Tire {i+1}", key=f"tire{i}")
+            with col_code:
+                code = st.text_input(f"Code {i+1}", key=f"code{i}")
+            with col_desc:
+                desc = st.text_input(f"Description {i+1}", key=f"desc{i}")
+            evaluation_data.append({"Tire %": tire_percent, "Code": code, "Description": desc})
 
 # 5️⃣ Lights & Electricals
 with st.expander("Lights & Electricals"):
@@ -125,8 +135,8 @@ with st.expander("Additional Comments / Photos"):
     comments = st.text_area("Additional Comments", height=120, placeholder="Add extra notes here...")
     photos = st.file_uploader("Upload Car Photos", accept_multiple_files=True, type=["png", "jpg", "jpeg"])
 
-# --- PDF GENERATION FUNCTION ---
-def generate_pdf(data):
+# --- PDF GENERATION FUNCTION (UPDATED) ---
+def generate_pdf(data, evaluation_data, car_diagram, photos):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
@@ -137,9 +147,9 @@ def generate_pdf(data):
     pdf.cell(0, 8, f"Inspection Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}", ln=True)
     pdf.ln(5)
 
-    # Basic Info
+    # --- Basic Info ---
     pdf.set_font("Arial", "B", 12)
-    pdf.cell(0, 8, "Basic Information", ln=True)
+    pdf.cell(0, 8, "Basic Information", ln=True, fill=True)
     pdf.set_font("Arial", "", 12)
     for key in ["Owner Name", "Make", "Car Model", "Model Year", "Variant", "Registration Year",
                 "Mileage", "Colour", "Transmission", "Fuel Type", "Registration Type",
@@ -148,7 +158,31 @@ def generate_pdf(data):
         value = str(data.get(key, "N/A"))
         pdf.cell(0, 8, f"{key}: {value}", ln=True)
 
-    # Other Sections
+    # --- Car Diagram ---
+    if car_diagram is not None:
+        pdf.ln(5)
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(0, 8, "Car Diagram", ln=True)
+        pdf.image(car_diagram, w=150)
+        pdf.ln(5)
+
+    # --- Car Body Evaluation Table ---
+    pdf.set_font("Arial", "B", 12)
+    pdf.set_fill_color(200, 220, 255)
+    pdf.cell(0, 8, "Car Body Evaluation", ln=True, fill=True)
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(30, 8, "Tire %", border=1)
+    pdf.cell(30, 8, "Code", border=1)
+    pdf.cell(120, 8, "Description", border=1)
+    pdf.ln()
+    pdf.set_font("Arial", "", 12)
+    for row in evaluation_data:
+        pdf.cell(30, 8, row["Tire %"], border=1)
+        pdf.cell(30, 8, row["Code"], border=1)
+        pdf.cell(120, 8, row["Description"], border=1)
+        pdf.ln()
+
+    # --- Other Sections ---
     for section, content in data.items():
         if section in ["Owner Name", "Make", "Car Model", "Model Year", "Variant", "Registration Year",
                        "Mileage", "Colour", "Transmission", "Fuel Type", "Registration Type",
@@ -161,6 +195,15 @@ def generate_pdf(data):
         pdf.set_font("Arial", "", 12)
         for key, value in content.items():
             pdf.cell(0, 8, f"{key}: {value if value else 'N/A'}", ln=True)
+
+    # --- Car Photos ---
+    if photos:
+        pdf.ln(5)
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(0, 8, "Car Photos", ln=True)
+        for photo in photos:
+            pdf.image(photo, w=150)
+            pdf.ln(5)
 
     pdf_output = io.BytesIO(pdf.output(dest="S").encode("latin-1"))
     return pdf_output
@@ -233,7 +276,7 @@ if st.button("Submit Inspection"):
             "Additional Comments": {"Comments": comments},
         }
 
-        pdf_bytes = generate_pdf(data)
+        pdf_bytes = generate_pdf(data, evaluation_data, car_diagram, photos)
 
         safe_owner = owner_name.replace("/", "_") or "Unknown"
         safe_model = car_model.replace("/", "_") or "Unknown"

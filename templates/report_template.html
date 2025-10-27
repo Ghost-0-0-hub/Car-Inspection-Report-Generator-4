@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{ highlights.reference_id }} - {{ car_details.make }} {{ car_details.model }} Inspection Report</title>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #f5f8fb;
+        color: #333;
+        margin: 0;
+        padding: 20px;
+    }
+
+    h1, h2, h3 {
+        color: #1b4f72;
+        margin-bottom: 5px;
+    }
+
+    .report-header {
+        text-align: center;
+        background-color: #eaf3f8;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .accordion {
+        background-color: #ffffff;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        border-left: 4px solid #1abc9c;
+        box-shadow: 0px 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .accordion-header {
+        padding: 15px 20px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 1.1em;
+        user-select: none;
+        transition: background 0.3s ease;
+    }
+
+    .accordion-header:hover {
+        background-color: #e1f4f1;
+    }
+
+    .accordion-content {
+        display: none;
+        padding: 15px 20px;
+        border-top: 1px solid #ddd;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 10px;
+    }
+
+    th, td {
+        text-align: left;
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f0f9f8;
+        color: #0e6251;
+    }
+
+    .field-label {
+        font-weight: bold;
+        color: #1abc9c;
+    }
+
+    .comments {
+        background: #f0f9f8;
+        padding: 10px;
+        border-radius: 6px;
+        margin-top: 5px;
+    }
+
+</style>
+</head>
+<body>
+
+<div class="report-header">
+    <h1>Vehicle Inspection Report</h1>
+    <p><strong>Date:</strong> {{ date }}</p>
+    <p><strong>Reference ID:</strong> {{ highlights.reference_id }}</p>
+    <p><strong>Car:</strong> {{ car_details.make }} {{ car_details.model }} {{ car_details.variant }} ({{ car_details.model_year }})</p>
+</div>
+
+<!-- Car Images Gallery -->
+{% if highlights.hilight_image_b64 %}
+<div class="car-images" style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:20px;">
+    {% for img_b64 in highlights.hilight_image_b64 %}
+        <img src="{{ img_b64 }}" alt="Car Image" style="max-width:250px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+    {% endfor %}
+</div>
+{% endif %}
+
+
+
+<!-- Accordion Template with Completion % -->
+{% macro accordion(title, content, percent) %}
+<div class="accordion">
+    <div class="accordion-header">
+        {{ title }} - {{ percent }}% filled
+    </div>
+    <div class="accordion-content">
+        {{ content }}
+    </div>
+</div>
+{% endmacro %}
+
+<!-- Highlights -->
+{% set highlights_content %}
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td class="field-label">Mileage</td><td>{{ highlights.mileage }} km</td></tr>
+<tr><td class="field-label">Color</td><td>{{ highlights.color }}</td></tr>
+<tr><td class="field-label">Fuel Type</td><td>{{ highlights.fuel_type }}</td></tr>
+<tr><td class="field-label">Transmission</td><td>{{ highlights.transmission }}</td></tr>
+<tr><td class="field-label">Drive Type</td><td>{{ highlights.drive_type }}</td></tr>
+<tr><td class="field-label">Pick-up Location</td><td>{{ highlights.pickup_location }}</td></tr>
+<tr><td class="field-label">Registration City</td><td>{{ highlights.registration_city }}</td></tr>
+<tr><td class="field-label">Registration Type</td><td>{{ highlights.registration_type }}</td></tr>
+</table>
+{% endset %}
+{{ accordion('Highlights', highlights_content, completion.highlights) }}
+
+<!-- Car Details -->
+{% set car_details_content %}
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+{% for key, value in car_details.items() %}
+<tr><td class="field-label">{{ key.replace('_',' ').title() }}</td><td>{{ value }}</td></tr>
+{% endfor %}
+</table>
+{% endset %}
+{{ accordion('Car Details', car_details_content, completion.car_details) }}
+
+<!-- Documents -->
+{% set documents_content %}
+<table>
+<tr><th>Document</th><th>Status</th></tr>
+{% for key, value in documents.items() %}
+<tr><td class="field-label">{{ key.replace('_',' ').title() }}</td><td>{{ value }}</td></tr>
+{% endfor %}
+</table>
+{% endset %}
+{{ accordion('Documents', documents_content, completion.documents) }}
+
+<!-- Interior -->
+{% set interior_content %}
+<table>
+<tr><th>Item</th><th>Condition</th></tr>
+{% for key, value in interior.items() if key != 'interior_comments' %}
+<tr><td class="field-label">{{ key.replace('_',' ').title() }}</td><td>{{ value }}</td></tr>
+{% endfor %}
+</table>
+{% if interior.interior_comments %}
+<div class="comments"><strong>Comments:</strong> {{ interior.interior_comments }}</div>
+{% endif %}
+{% endset %}
+{{ accordion('Interior', interior_content, completion.interior) }}
+
+<!-- Car Body Evaluation -->
+{% set car_body_content %}
+<table>
+<tr><th>Panel</th><th>Condition</th></tr>
+{% for panel, condition in car_body_panels.items() %}
+<tr><td class="field-label">{{ panel }}</td><td>{{ condition }}</td></tr>
+{% endfor %}
+</table>
+<div class="comments"><strong>Overall Exterior:</strong> {{ car_body.overall_exterior_condition }}<br>
+<strong>Overall Interior:</strong> {{ car_body.overall_interior_condition }}<br>
+<strong>Comments:</strong> {{ car_body.comments }}</div>
+{% endset %}
+{{ accordion('Car Body Evaluation', car_body_content, completion.car_body) }}
+
+<!-- Mechanical -->
+{% set mechanical_content %}
+<table>
+<tr><th>Component</th><th>Status</th></tr>
+{% for key, value in mechanical.items() if key != 'mechanical_comments' %}
+<tr><td class="field-label">{{ key.replace('_',' ').title() }}</td><td>{{ value }}</td></tr>
+{% endfor %}
+</table>
+{% if mechanical.mechanical_comments %}
+<div class="comments"><strong>Comments:</strong> {{ mechanical.mechanical_comments }}</div>
+{% endif %}
+{% endset %}
+{{ accordion('Mechanical', mechanical_content, completion.mechanical) }}
+
+<!-- Suspension -->
+{% set suspension_content %}
+<table>
+<tr><th>Part</th><th>Status</th></tr>
+{% for part_group, group_values in suspension_parts.items() %}
+<tr><td colspan="2" class="field-label">{{ part_group.replace('_',' ').title() }}</td></tr>
+{% for name, value in group_values.items() %}
+<tr><td style="padding-left:20px">{{ name }}</td><td>{{ value }}</td></tr>
+{% endfor %}
+{% endfor %}
+</table>
+<div class="comments"><strong>Comments:</strong> {{ suspension.suspension_comments }}</div>
+{% endset %}
+{{ accordion('Suspension', suspension_content, completion.suspension) }}
+
+<!-- Electrical -->
+{% set electrical_content %}
+<table>
+<tr><th>Component</th><th>Status</th></tr>
+{% for key, value in electrical.items() if key != 'electrical_comments' %}
+<tr><td class="field-label">{{ key.replace('_',' ').title() }}</td><td>{{ value }}</td></tr>
+{% endfor %}
+</table>
+{% if electrical.electrical_comments %}
+<div class="comments"><strong>Comments:</strong> {{ electrical.electrical_comments }}</div>
+{% endif %}
+{% endset %}
+{{ accordion('Electrical', electrical_content, completion.electrical) }}
+
+<!-- Tires -->
+{% set tires_content %}
+<table>
+<tr><th>Tire</th><th>Condition</th></tr>
+{% for key, value in tires.items() if key != 'comments' %}
+<tr><td class="field-label">{{ key.replace('_',' ').title() }}</td><td>{{ value }}</td></tr>
+{% endfor %}
+</table>
+{% if tires.comments %}
+<div class="comments"><strong>Comments:</strong> {{ tires.comments }}</div>
+{% endif %}
+{% endset %}
+{{ accordion('Tires', tires_content, completion.tires) }}
+
+<!-- Accessories -->
+{% set accessories_content %}
+<table>
+<tr><th>Accessory</th><th>Status</th></tr>
+{% for key, value in accessories.items() %}
+<tr><td class="field-label">{{ key.replace('_',' ').title() }}</td><td>{{ value }}</td></tr>
+{% endfor %}
+</table>
+{% endset %}
+{{ accordion('Accessories', accessories_content, completion.accessories) }}
+
+<!-- Test Drive -->
+{% set test_drive_content %}
+<table>
+<tr><th>Test Item</th><th>Status</th></tr>
+{% for key, value in test_drive.items() if key != 'comments' %}
+<tr><td class="field-label">{{ key.replace('_',' ').title() }}</td><td>{{ value }}</td></tr>
+{% endfor %}
+</table>
+{% if test_drive.comments %}
+<div class="comments"><strong>Comments:</strong> {{ test_drive.comments }}</div>
+{% endif %}
+{% endset %}
+{{ accordion('Test Drive', test_drive_content, completion.test_drive) }}
+
+<!-- Final Comments -->
+{% set final_content %}
+<div class="comments">
+<p><strong>Inspector:</strong> {{ final.inspector_name }}</p>
+<p><strong>Overall Condition:</strong> {{ final.overall_condition }}</p>
+<p><strong>Final Comments:</strong> {{ final.final_comments }}</p>
+</div>
+{% endset %}
+{{ accordion('Final Comments', final_content, completion.final) }}
+
+
+<script>
+    const accordions = document.querySelectorAll('.accordion-header');
+    accordions.forEach(header => {
+        header.addEventListener('click', () => {
+            const content = header.nextElementSibling;
+            content.style.display = content.style.display === 'block' ? 'none' : 'block';
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,340 +1,650 @@
 import streamlit as st
-from fpdf import FPDF
-import io
-import traceback
+import streamlit.components.v1 as components
+import base64
+import os
+from jinja2 import Template
 from datetime import datetime
-from zipfile import ZipFile
 
-# --- PAGE CONFIG ---
-st.set_page_config(
-    page_title="CAROBAR Inspection Form",
-    page_icon="🚘",
-    layout="wide"
-)
-# --- LIGHT THEME CSS ---
-st.markdown("""
-<style>
-/* App and Sidebar Colors */
-[data-testid="stAppViewContainer"] {background-color: #FFFFFF;}
-[data-testid="stSidebar"] {background-color: #F8F9FA;}
-[data-testid="stAppViewContainer"] {color: #0B2F7A;}
+# ================================
+# --- CONFIGURATION ---
+# ================================
+st.set_page_config(page_title="🚘 Car Inspection Form", layout="wide")
 
-/* Submit Button - Green */
-.stButton>button {
-    background-color: #28a745;  /* Green */
-    color: white;
-    font-weight: bold;
-}
+# --- Directories & Templates ---
+REPORTS_DIR = "reports"
+TEMPLATE_PATH = "templates/report_template.html"
+os.makedirs(REPORTS_DIR, exist_ok=True)
 
-/* Optional: Hover effect for button */
-.stButton>button:hover {
-    background-color: #218838;
-}
-</style>
+# ================================
+# --- TABS ---
+# ================================
+tab1, tab2 = st.tabs(["Inspection Form", "Damage Diagram"])
 
-<!-- Title with green O -->
-<h1 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-🚘 CAR<span style="color:#00B050;">O</span>BAR Inspection Form
-</h1>
-""", unsafe_allow_html=True)
+# ================================
+# --- DAMAGE DIAGRAM TAB ---
+# ================================
+with tab2:
+    st.title("Car Damage Diagram")
+    with open("CarDamage.jpg", "rb") as f:
+        img_bytes = f.read()
+        img_base64 = base64.b64encode(img_bytes).decode()
+    
+        html_code = f"""
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+            <h2 style="text-align:center; margin-bottom:10px;">Car Damage Diagram</h2>
+            <canvas id="carCanvas" style="border:1px solid #ccc; max-width:90%; height:auto;"></canvas>
+            <select id="damageSelect" style="position:absolute; display:none; padding:5px;">
+              <option value="">--Select Damage--</option>
+              <option value="A1">A1 - Minor Scratch</option>
+              <option value="A2">A2 - Major/Multiple Scratches</option>
+              <option value="E1">E1 - Minor Dent</option>
+              <option value="E2">E2 - Major/Multiple Dents</option>
+              <option value="P">P - Paint Spray ONLY</option>
+              <option value="T">T - TOTAL Genuine</option>
+              <option value="G1">G1 - Glass Scratches</option>
+              <option value="G4">G4 - Glass Chipped</option>
+              <option value="S">S - Repaired / Dry Denting</option>
+            </select>
+            <button id="downloadBtn" style="
+                margin-top:15px;
+                padding: 12px 25px;
+                font-size: 16px;
+                font-weight: bold;
+                color: white;
+                background-color: #28a745;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: background-color 0.3s;
+            ">Download Diagram</button>
+        </div>
+    
+        <script>
+        const canvas = document.getElementById('carCanvas');
+        const ctx = canvas.getContext('2d');
+        const damageSelect = document.getElementById('damageSelect');
+        const downloadBtn = document.getElementById('downloadBtn');
+        let annotations = [];
+    
+        const colors = {{
+            "A1": "#D8BFD8",
+            "A2": "#800080",
+            "E1": "#FFA07A",
+            "E2": "#FF8C00",
+            "G1": "#1E90FF",
+            "S": "#FFD700",
+            "T": "#FFFF00"
+        }};
+    
+        const img = new Image();
+        img.src = "data:image/jpeg;base64,{img_base64}";
+        img.onload = () => {{
+            // Set canvas size to image natural size (scaled down if needed)
+            const maxWidth = 600;  // max width of canvas
+            const scale = Math.min(maxWidth / img.naturalWidth, 1);
+            canvas.width = img.naturalWidth * scale;
+            canvas.height = img.naturalHeight * scale;
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        }};
+    
+        // Click to select damage
+        canvas.addEventListener('click', (e) => {{
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            damageSelect.style.left = e.clientX + 'px';
+            damageSelect.style.top = e.clientY + 'px';
+            damageSelect.style.display = 'block';
+            damageSelect.dataset.x = x;
+            damageSelect.dataset.y = y;
+            damageSelect.focus();
+        }});
+    
+        // Add annotation
+        damageSelect.addEventListener('change', (e) => {{
+            const code = e.target.value;
+            if(!code) return;
+            annotations.push({{code, x:e.target.dataset.x, y:e.target.dataset.y}});
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            annotations.forEach(a => {{
+                const padding = 6;
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const textWidth = ctx.measureText(a.code).width;
+                const rectWidth = textWidth + padding*2;
+                const rectHeight = 20;
+                const bx = a.x - rectWidth/2;
+                const by = a.y - rectHeight/2;
+                ctx.fillStyle = colors[a.code] || "#ff6666";
+                ctx.fillRect(bx, by, rectWidth, rectHeight);
+                ctx.strokeStyle = "black";
+                ctx.strokeRect(bx, by, rectWidth, rectHeight);
+                ctx.fillStyle = "white";
+                ctx.fillText(a.code, a.x, a.y);
+            }});
+            damageSelect.style.display='none';
+            damageSelect.value='';
+        }});
+    
+        // Download
+        downloadBtn.addEventListener('click', () => {{
+            const link = document.createElement('a');
+            link.download = 'car_damage.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }});
+        </script>
+        """
+    
+        components.html(html_code, height=700)
+    
+    
+    # ================================
+# --- INSPECTION FORM TAB ---
+# ================================
+with tab1:
+    st.title("🚘 CAROBAR Inspection System")
+    st.markdown("### 🧾 Fill the Vehicle Inspection Form")
 
-
-# -------------------------------
-# 1️⃣ Basic Information / Car Details
-with st.expander("Basic Information", expanded=True):
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        owner_name = st.text_input("Owner Name").strip()
-        make = st.text_input("Make").strip()
-        mileage = st.number_input("Mileage (km)", min_value=0, step=100)
-        colour = st.text_input("Colour").strip()
-        fuel_type = st.selectbox("Fuel Type", ["Petrol", "Hybrid", "Electric", "Diesel"])
-    with col2:
-        car_model = st.text_input("Car Model").strip()
-        model_year = st.number_input("Model Year", min_value=1980, max_value=2030, step=1)
-        registration_year = st.number_input("Registration Year", min_value=1980, max_value=2030, step=1)
-        registration_type = st.selectbox("Registration Type", ["Commercial", "Private"])
-        registration_city = st.text_input("Registration City").strip()
-    with col3:
-        variant = st.text_input("Variant").strip()
-        license_plate = st.text_input("License Plate").strip()
-        location = st.text_input("Location").strip()
-        import_status = st.text_input("Import Status From").strip()
-        number_of_seats = st.number_input("Number of Seats", min_value=1, max_value=20)
-        number_of_doors = st.number_input("Number of Doors", min_value=1, max_value=10)
-
-# -------------------------------
-# 2️⃣ Engine & Transmission / Mechanical
-with st.expander("Engine & Transmission"):
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        engine_condition = st.selectbox("Engine Condition", ["Excellent", "Good", "Average", "Poor"])
-        transmission = st.selectbox("Transmission", ["Manual", "Automatic", "CVT", "Other"])
-    with col2:
-        transmission_condition = st.selectbox("Transmission Condition", ["Excellent", "Good", "Average", "Poor"])
-    with col3:
-        oil_leaks = st.radio("Oil Leaks?", ["Yes", "No"])
-
-# -------------------------------
-# 3️⃣ Brakes & Suspension
-with st.expander("Brakes & Suspension"):
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        brakes_condition = st.selectbox("Brakes Condition", ["Excellent", "Good", "Average", "Poor"])
-    with col2:
-        suspension_condition = st.selectbox("Suspension Condition", ["Excellent", "Good", "Average", "Poor"])
-    with col3:
-        steering_condition = st.selectbox("Steering Condition", ["Excellent", "Good", "Average", "Poor"])
-
-# -------------------------------
-# 4️⃣ Tires & Wheels / Car Body Evaluation
-with st.expander("Tires & Wheels / Car Body"):
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("### Tire Condition (%)")
-        tire_front_left = st.number_input("Front Left Tire", min_value=0, max_value=100, step=1)
-        tire_front_right = st.number_input("Front Right Tire", min_value=0, max_value=100, step=1)
-        tire_rear_left = st.number_input("Rear Left Tire", min_value=0, max_value=100, step=1)
-        tire_rear_right = st.number_input("Rear Right Tire", min_value=0, max_value=100, step=1)
-
-        wheel_condition = st.selectbox("Wheel Condition", ["Excellent", "Good", "Average", "Poor"])
-
-        car_diagram = st.file_uploader("Upload Car Diagram (if any)", type=["png", "jpg", "jpeg"])
-
-    with col2:
-        st.markdown("### Car Body Evaluation Codes")
-        codes = {}
-        for code, desc in [
-            ("A1", "Minor Scratch"),
-            ("A2", "Major or Multiple Scratches"),
-            ("E1", "Minor Dent"),
-            ("E2", "Major or Multiple Dents"),
-            ("P", "Paint Spray Only"),
-            ("T", "TOTAL Genuine"),
-            ("G1", "Glass Scratches"),
-            ("G4", "Glass Chipped"),
-            ("W", "Repaired with Dry Denting")
-        ]:
-            checked = st.checkbox(f"{code} - {desc}")
-            note = st.text_input(f"Notes for {code}", "")
-            codes[code] = {"checked": checked, "note": note}
-
-# -------------------------------
-# 5️⃣ Lights & Electricals
-with st.expander("Lights & Electricals"):
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        headlight_condition = st.selectbox("Headlights", ["Working", "Not Working"])
-        accessories = st.text_area("Accessories Checked", height=60)
-    with col2:
-        indicator_condition = st.selectbox("Indicators", ["Working", "Not Working"])
-    with col3:
-        battery_condition = st.selectbox("Battery Condition", ["Excellent", "Good", "Average", "Poor"])
-        test_drive = st.selectbox("Test Drive", ["Passed", "Needs Attention", "Failed"])
-
-# -------------------------------
-# 6️⃣ Interior & Exterior
-with st.expander("Interior & Exterior"):
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        interior_condition = st.selectbox("Interior Condition", ["Excellent", "Good", "Average", "Poor"])
-    with col2:
-        exterior_condition = st.selectbox("Exterior Condition", ["Excellent", "Good", "Average", "Poor"])
-    with col3:
-        paint_condition = st.selectbox("Paint Condition", ["Excellent", "Good", "Average", "Poor"])
-
-# -------------------------------
-# 7️⃣ Safety & Features
-with st.expander("Safety & Features"):
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        airbags = st.radio("Airbags Functional?", ["Yes", "No"])
-    with col2:
-        ac_condition = st.selectbox("AC Condition", ["Excellent", "Good", "Average", "Poor"])
-    with col3:
-        infotainment = st.selectbox("Infotainment System", ["Excellent", "Good", "Average", "Poor"])
-
-# -------------------------------
-# 8️⃣ Documents
-with st.expander("Documents"):
-    col1, col2 = st.columns(2)
-    with col1:
-        original_book = st.checkbox("Original Book")
-        original_card = st.checkbox("Original Card")
-        original_file = st.checkbox("Original File")
-    with col2:
-        number_plate_condition = st.selectbox("Number Plate Condition", ["Original", "Not Original"])
-
-# -------------------------------
-# 9️⃣ Additional Comments / Photos
-with st.expander("Additional Comments / Photos"):
-    comments = st.text_area("Additional Comments", height=120, placeholder="Add extra notes here...")
-    photos = st.file_uploader("Upload Car Photos", accept_multiple_files=True, type=["png", "jpg", "jpeg"])
-
-# -------------------------------
-# PDF GENERATION FUNCTION
-def generate_pdf(data, tire_data, codes, car_diagram):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.set_font("Arial", "B", 16)
-    pdf.cell(0, 10, "Car Inspection Report", ln=True, align="C")
-    pdf.set_font("Arial", "", 12)
-    pdf.ln(5)
-    pdf.cell(0, 8, f"Inspection Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}", ln=True)
-    pdf.ln(5)
-
-    # --- Basic Info ---
-    pdf.set_font("Arial", "B", 12)
-    pdf.cell(0, 8, "Basic Information", ln=True, fill=True)
-    pdf.set_font("Arial", "", 12)
-    for key in [
-        "Owner Name", "Make", "Car Model", "Model Year", "Variant", "Registration Year",
-        "Mileage", "Colour", "Transmission", "Fuel Type", "Registration Type",
-        "Registration City", "Location", "Import Status From", "Number of Seats",
-        "Number of Doors", "License Plate"
-    ]:
-        pdf.cell(0, 8, f"{key}: {data.get(key,'N/A')}", ln=True)
-
-    # --- Car Diagram ---
-    if car_diagram:
-        pdf.ln(5)
-        pdf.set_font("Arial", "B", 12)
-        pdf.cell(0, 8, "Car Diagram", ln=True)
-        pdf.image(car_diagram, w=150)
-        pdf.ln(5)
-
-    # --- Car Body Evaluation ---
-    pdf.set_font("Arial", "B", 12)
-    pdf.set_fill_color(200, 220, 255)
-    pdf.cell(0, 8, "Car Body Evaluation", ln=True, fill=True)
-    pdf.set_font("Arial", "B", 12)
-    pdf.cell(30, 8, "Tire %", border=1)
-    pdf.cell(30, 8, "Code", border=1)
-    pdf.cell(120, 8, "Description / Notes", border=1)
-    pdf.ln()
-    pdf.set_font("Arial", "", 12)
-    # Tire %
-    for pos, value in tire_data.items():
-        pdf.cell(30, 8, str(value), border=1)
-        pdf.cell(30, 8, "Tire", border=1)
-        pdf.cell(120, 8, pos, border=1)
-        pdf.ln()
-    # Codes
-    for code, info in codes.items():
-        pdf.cell(30, 8, "-", border=1)
-        pdf.cell(30, 8, code, border=1)
-        pdf.cell(120, 8, f"{'Yes' if info['checked'] else 'No'} | Notes: {info['note']}", border=1)
-        pdf.ln()
-
-    # --- Other Sections ---
-    for section, content in data.items():
-        if section in [
-            "Owner Name", "Make", "Car Model", "Model Year", "Variant", "Registration Year",
-            "Mileage", "Colour", "Transmission", "Fuel Type", "Registration Type",
-            "Registration City", "Location", "Import Status From", "Number of Seats",
-            "Number of Doors", "License Plate"
-        ]:
-            continue
-        pdf.ln(5)
-        pdf.set_font("Arial", "B", 12)
-        pdf.cell(0, 8, section, ln=True)
-        pdf.set_font("Arial", "", 12)
-        for key, value in content.items():
-            pdf.cell(0, 8, f"{key}: {value if value else 'N/A'}", ln=True)
-
-    pdf_bytes = io.BytesIO(pdf.output(dest="S").encode("latin-1"))
-    return pdf_bytes
-
-# -------------------------------
-# SUBMIT BUTTON + ZIP DOWNLOAD
-if st.button("Submit Inspection"):
-    try:
-        if not owner_name or not car_model:
-            st.warning("⚠️ Please fill in at least Owner Name and Car Model before submitting.")
-            st.stop()
-
-        # Collect tire data
-        tire_data = {
-            "Front Left": tire_front_left,
-            "Front Right": tire_front_right,
-            "Rear Left": tire_rear_left,
-            "Rear Right": tire_rear_right
-        }
-
-        # Collect all data
-        data = {
-            "Owner Name": owner_name, "Make": make, "Car Model": car_model,
-            "Model Year": model_year, "Variant": variant, "Registration Year": registration_year,
-            "Mileage": mileage, "Colour": colour, "Transmission": transmission,
-            "Fuel Type": fuel_type, "Registration Type": registration_type,
-            "Registration City": registration_city, "Location": location,
-            "Import Status From": import_status, "Number of Seats": number_of_seats,
-            "Number of Doors": number_of_doors, "License Plate": license_plate,
-            "Engine & Transmission": {
-                "Engine Condition": engine_condition,
-                "Transmission Condition": transmission_condition,
-                "Oil Leaks": oil_leaks
-            },
-            "Brakes & Suspension": {
-                "Brakes Condition": brakes_condition,
-                "Suspension Condition": suspension_condition,
-                "Steering Condition": steering_condition
-            },
-            "Lights & Electricals": {
-                "Headlights": headlight_condition,
-                "Indicators": indicator_condition,
-                "Battery Condition": battery_condition,
-                "Accessories Checked": accessories,
-                "Test Drive": test_drive
-            },
-            "Interior & Exterior": {
-                "Interior Condition": interior_condition,
-                "Exterior Condition": exterior_condition,
-                "Paint Condition": paint_condition
-            },
-            "Safety & Features": {
-                "Airbags Functional": airbags,
-                "AC Condition": ac_condition,
-                "Infotainment System": infotainment
-            },
-            "Documents": {
-                "Original Book": original_book,
-                "Original Card": original_card,
-                "Original File": original_file,
-                "Number Plate Condition": number_plate_condition
-            },
-            "Additional Comments": {"Comments": comments}
-        }
-
-        # Generate PDF
-        pdf_bytes = generate_pdf(data, tire_data, codes, car_diagram)
-
-        # Create ZIP
-        zip_buffer = io.BytesIO()
-        with ZipFile(zip_buffer, "a") as zip_file:
-            zip_file.writestr(f"{owner_name}_{car_model}_Inspection.pdf", pdf_bytes.getvalue())
-            # Add photos
-            if photos:
-                for i, photo in enumerate(photos):
-                    photo_bytes = photo.read()
-                    zip_file.writestr(f"Photo_{i+1}_{photo.name}", photo_bytes)
-            # Add car diagram if exists
-            if car_diagram:
-                diagram_bytes = car_diagram.read()
-                zip_file.writestr(f"CarDiagram_{car_diagram.name}", diagram_bytes)
-        zip_buffer.seek(0)
-
-        st.success("✅ Inspection report and photos packaged successfully!")
-        st.download_button(
-            label="📦 Download ZIP with PDF & Images",
-            data=zip_buffer,
-            file_name=f"{owner_name}_{car_model}_Inspection.zip",
-            mime="application/zip"
+    # ========================
+    # --- Highlights ---
+    # ========================
+    with st.expander("Highlights", expanded=False):
+        st.write("Upload showcase images of the car (front, rear, side, interior, engine bay)")
+        highlight_images = st.file_uploader(
+            "Upload Highlight Images", accept_multiple_files=True, type=["jpg", "png"], key="highlight_images"
         )
-        st.balloons()
+        reference_id = st.text_input("Reference ID", key="highlight_reference_id")
+        mileage = st.text_input("Mileage (km)", key="highlight_mileage")
+        color = st.text_input("Color", key="highlight_color")
+        fuel_type = st.selectbox("Fuel Type", ["Petrol", "Diesel", "Hybrid", "Electric"], key="highlight_fuel_type")
+        transmission = st.selectbox("Transmission", ["Manual", "Automatic"], key="highlight_transmission")
+        drive_type = st.selectbox("Drive Type", ["2WD", "4WD", "AWD"], key="highlight_drive_type")
+        pickup_location = st.text_input("Pick-up Location", key="highlight_pickup_location")
+        registration_city = st.text_input("Registration City", key="highlight_registration_city")
+        registration_type = st.selectbox("Registration Type", ["Private", "Commercial"], key="highlight_registration_type")
 
-    except Exception as e:
-        st.error(f"❌ Unexpected error: {e}")
-        st.code(traceback.format_exc())
+    # Convert highlight images to Base64
+    highlight_images_b64 = []
+    if highlight_images:
+        for img_file in highlight_images:
+            bytes_data = img_file.read()
+            encoded = base64.b64encode(bytes_data).decode()
+            highlight_images_b64.append(f"data:{img_file.type};base64,{encoded}")
+
+    # ========================
+    # --- Car Details ---
+    # ========================
+    with st.expander("Car Details", expanded=False):
+        col1, col2 = st.columns(2)
+        with col1:
+            make = st.text_input("Make", key="car_make")
+            model = st.text_input("Model", key="car_model")
+            variant = st.text_input("Variant", key="car_variant")
+            model_year = st.text_input("Model Year", key="car_model_year")
+            reg_year = st.text_input("Registration Year", key="car_reg_year")
+        with col2:
+            engine_capacity = st.text_input("Engine Capacity (cc)", key="car_engine_capacity")
+            seating_capacity = st.number_input("Seating Capacity", min_value=1, max_value=20, key="car_seating_capacity")
+            color_code = st.text_input("Color Code (if available)", key="car_color_code")
+            chassis_number = st.text_input("Chassis Number", key="car_chassis_number")
+            engine_number = st.text_input("Engine Number", key="car_engine_number")
+
+    # ========================
+    # --- Documents ---
+    # ========================
+    with st.expander("Documents", expanded=False):
+        original_book = st.selectbox("Original Book", ["Yes", "No"], key="doc_original_book")
+        original_card = st.selectbox("Original Card", ["Yes", "No"], key="doc_original_card")
+        original_file = st.selectbox("Original File", ["Yes", "No"], key="doc_original_file")
+        number_plate_condition = st.selectbox("Number Plate Condition", ["Original", "Not Original"], key="doc_number_plate")
+        registration_certificate = st.selectbox("Registration Certificate", ["Yes", "No"], key="doc_registration_cert")
+        insurance_copy = st.selectbox("Insurance Copy", ["Yes", "No"], key="doc_insurance_copy")
+        no_of_owners = st.number_input("Number of Previous Owners", min_value=0, key="doc_no_of_owners")
+        no_of_keys = st.number_input("Number of Keys", min_value=0, key="doc_no_of_keys")
+
+    # ========================
+    # --- Interior ---
+    # ========================
+    with st.expander("Interior", expanded=False):
+        dashboard = st.selectbox("Dashboard Condition", ["Good", "Average", "Bad"], key="int_dashboard")
+        seats = st.selectbox("Seat Condition", ["Good", "Average", "Bad"], key="int_seats")
+        roof_liner = st.selectbox("Roof Liner Condition", ["Good", "Average", "Bad"], key="int_roof_liner")
+        ac_heater = st.selectbox("A/C & Heater", ["Working", "Not Working"], key="int_ac_heater")
+        infotainment = st.selectbox("Infotainment / Stereo", ["Working", "Not Working"], key="int_infotainment")
+        seat_belts = st.selectbox("Seat Belts Condition", ["Good", "Average", "Bad"], key="int_seat_belts")
+        interior_lights = st.selectbox("Interior Lights", ["Working", "Faulty"], key="int_lights")
+        pedals = st.selectbox("Pedals Condition", ["Good", "Worn", "Needs Replacement"], key="int_pedals")
+        interior_comments = st.text_area("Interior Comments", key="int_comments")
+
+    # ========================
+    # --- Car Body Evaluation ---
+    # ========================
+    with st.expander("Car Body Evaluation", expanded=False):
+        st.write("Upload photos of body evaluation or diagrams")
+        body_images = st.file_uploader(
+            "Upload Body Evaluation Images", accept_multiple_files=True, type=["jpg", "png"], key="body_images"
+        )
+
+        front_bumper = st.selectbox("Front Bumper Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_front_bumper")
+        bonnet = st.selectbox("Bonnet Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_bonnet")
+        front_windscreen = st.selectbox("Front Windscreen Condition", ["Good", "Cracked", "Replaced"], key="body_front_windscreen")
+        front_left_fender = st.selectbox("Front Left Fender Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_front_left_fender")
+        left_a_pillar = st.selectbox("Left A-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_left_a_pillar")
+        front_left_door = st.selectbox("Front Left Door Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_front_left_door")
+        roof = st.selectbox("Roof Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_roof")
+        left_b_pillar = st.selectbox("Left B-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_left_b_pillar")
+        back_left_door = st.selectbox("Back Left Door Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_back_left_door")
+        left_c_pillar = st.selectbox("Left C-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_left_c_pillar")
+        left_d_pillar = st.selectbox("Left D-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_left_d_pillar")
+        back_left_quarter_panel = st.selectbox("Back Left Quarter Panel Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_back_left_quarter")
+        rear_bumper = st.selectbox("Rear Bumper Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_rear_bumper")
+        trunk_lid = st.selectbox("Trunk Lid Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_trunk_lid")
+        back_right_quarter_panel = st.selectbox("Back Right Quarter Panel Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_back_right_quarter")
+        rear_windscreen = st.selectbox("Rear Windscreen Condition", ["Good", "Cracked", "Replaced"], key="body_rear_windscreen")
+        right_d_pillar = st.selectbox("Right D-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_right_d_pillar")
+        right_c_pillar = st.selectbox("Right C-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_right_c_pillar")
+        back_right_door = st.selectbox("Back Right Door Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_back_right_door")
+        right_b_pillar = st.selectbox("Right B-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_right_b_pillar")
+        front_right_door = st.selectbox("Front Right Door Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_front_right_door")
+        right_a_pillar = st.selectbox("Right A-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_right_a_pillar")
+        front_right_fender = st.selectbox("Front Right Fender Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_front_right_fender")
+
+        exterior_condition = st.selectbox("Overall Exterior Condition", ["Excellent", "Good", "Average", "Poor"], key="body_exterior_condition")
+        interior_condition = st.selectbox("Overall Interior Condition", ["Excellent", "Good", "Average", "Poor"], key="body_interior_condition")
+        car_body_comments = st.text_area("Car Body Comments / Observations", key="body_comments")
+
+
+        # --- Mechanical ---
+    with st.expander("Mechanical", expanded=False):
+        engine_condition = st.selectbox("Engine Condition", ["Good", "Average", "Weak"], key="mech_engine_condition")
+        transmission_function = st.selectbox("Transmission Function", ["Smooth", "Rough", "Needs Service"], key="mech_transmission_function")
+        clutch_condition = st.selectbox("Clutch Condition", ["Good", "Slipping", "Needs Replacement"], key="mech_clutch")
+        catalytic_converter = st.selectbox("Catalytic Converter Condition", ["Good", "Average", "Faulty"], key="mech_catalytic")
+        radiator_condition = st.selectbox("Radiator Condition", ["Good", "Average", "Leaking"], key="mech_radiator")
+        engine_noise = st.selectbox("Engine Noise", ["Normal", "Abnormal"], key="mech_engine_noise")
+        inner_bonnet_condition = st.selectbox("Inner Bonnet Condition", ["Clean", "Oily", "Damaged"], key="mech_inner_bonnet")
+        battery_condition = st.selectbox("Battery Condition", ["Good", "Weak", "Dead"], key='mech_battery')
+        abs_present = st.selectbox("Has ABS (Anti-lock Braking System)?", ["Yes", "No"], key="mech_abs")
+        exhaust_smoke = st.selectbox("Engine Smoke Condition", ["None", "White", "Black", "Blue"], key="mech_exhaust_smoke")
+        engine_oil_condition = st.selectbox("Engine Oil Condition", ["Good", "Dirty", "Low"], key="mech_oil")
+        mechanical_comments = st.text_area("Mechanical Comments", key="mech_comments")
+    
+    
+    # --- Suspension ---
+    with st.expander("Suspension", expanded=False):
+        front_left_shock = st.selectbox("Front Left Shock Absorber Condition", ["Good", "Weak", "Leaking"], key="susp_fl_shock")
+        front_right_shock = st.selectbox("Front Right Shock Absorber Condition", ["Good", "Weak", "Leaking"], key="susp_fr_shock")
+        back_left_shock = st.selectbox("Back Left Shock Absorber Condition", ["Good", "Weak", "Leaking"], key="susp_bl_shock")
+        back_right_shock = st.selectbox("Back Right Shock Absorber Condition", ["Good", "Weak", "Leaking"], key="susp_br_shock")
+    
+        front_left_axle = st.selectbox("Front Left Axle Condition", ["Good", "Worn", "Damaged"], key="susp_fl_axle")
+        front_right_axle = st.selectbox("Front Right Axle Condition", ["Good", "Worn", "Damaged"], key="susp_fr_axle")
+        back_left_axle = st.selectbox("Back Left Axle Condition", ["Good", "Worn", "Damaged"], key="susp_bl_axle")
+        back_right_axle = st.selectbox("Back Right Axle Condition", ["Good", "Worn", "Damaged"], key="susp_br_axle")
+    
+        steering_alignment = st.selectbox("Steering Alignment", ["Good", "Off", "Needs Work"], key="susp_steering_alignment")
+        suspension_noise = st.selectbox("Suspension Noise", ["None", "Mild", "Severe"], key="susp_noise")
+        suspension_comments = st.text_area("Suspension Comments", key="susp_comments")
+    
+    
+    # --- Electrical ---
+    with st.expander("Electrical", expanded=False):
+        headlights = st.selectbox("Headlights Condition", ["Working", "Faulty"], key="elec_headlights")
+        tail_lights = st.selectbox("Tail Lights Condition", ["Working", "Faulty"], key="elec_tail_lights")
+        indicators = st.selectbox("Indicators / Blinkers", ["Working", "Faulty"], key="elec_indicators")
+        brake_lights = st.selectbox("Brake Lights", ["Working", "Faulty"], key="elec_brake_lights")
+        power_windows = st.selectbox("Power Windows", ["Working", "Faulty"], key="elec_power_windows")
+        central_locking = st.selectbox("Central Locking", ["Working", "Faulty"], key="elec_central_lock")
+        battery_elec = st.selectbox("Battery Condition", ["Good", "Weak", "Dead"], key='elec_battery')
+        wiring = st.selectbox("Wiring Condition", ["Good", "Average", "Poor"], key="elec_wiring")
+        electrical_comments = st.text_area("Electrical Comments", key="elec_comments")
+    
+    
+    # --- Tires ---
+    with st.expander("Tires", expanded=False):
+        col1, col2, col3, col4 = st.columns(4)
+        tire_fl = st.slider("Front Left Tire %", 0, 100, 80, key="tire_fl")
+        tire_fr = st.slider("Front Right Tire %", 0, 100, 80, key="tire_fr")
+        tire_rl = st.slider("Rear Left Tire %", 0, 100, 80, key="tire_rl")
+        tire_rr = st.slider("Rear Right Tire %", 0, 100, 80, key="tire_rr")
+        spare_tire_condition = st.selectbox("Spare Tire Condition", ["Available", "Missing", "Damaged"], key="tire_spare")
+        tire_comments = st.text_area("Tires Comments", key="tire_comments")
+    
+    
+    # --- Accessories ---
+    with st.expander("Accessories", expanded=False):
+        has_fog_lamp = st.selectbox("Has Fog Lamp?", ["Yes", "No"], key="acc_fog_lamp")
+        has_immobilizer_key = st.selectbox("Has Immobilizer Key?", ["Yes", "No"], key="acc_immobilizer")
+        has_push_start = st.selectbox("Has Push Start?", ["Yes", "No"], key="acc_push_start")
+        upholstery_type = st.selectbox("Upholstery Type", ["Fabric", "Leather", "Synthetic", "Other"], key="acc_upholstery")
+        has_electric_seats = st.selectbox("Has Electric Seats?", ["Yes", "No"], key="acc_electric_seats")
+        has_immobiliser = st.selectbox("Has Immobiliser?", ["Yes", "No"], key="acc_immobiliser")
+        has_retractable_side_mirrors = st.selectbox("Has Retractable Side Mirrors?", ["Yes", "No"], key="acc_side_mirrors")
+        has_tool_kit = st.selectbox("Has Tool Kit?", ["Yes", "No"], key="acc_tool_kit")
+        has_puncture_kit = st.selectbox("Has Puncture Kit?", ["Yes", "No"], key="acc_puncture_kit")
+        has_spare_wheel = st.selectbox("Has Spare Wheel?", ["Yes", "No"], key="acc_spare_wheel")
+    
+    
+    # --- Test Drive ---
+    with st.expander("Test Drive", expanded=False):
+        engine_function = st.selectbox("Engine Function", ["Normal", "Abnormal"], key="td_engine_function")
+        transmission_condition = st.selectbox("Transmission Condition", ["Smooth", "Rough", "Needs Service"], key="td_transmission_condition")
+        brake_function = st.selectbox("Brake Function", ["Good", "Average", "Weak"], key="td_brake_function")
+        suspension_function = st.selectbox("Suspension Function", ["Good", "Average", "Weak"], key="td_suspension_function")
+        steering_function = st.selectbox("Steering Function", ["Good", "Loose", "Stiff"], key="td_steering_function")
+    
+        has_radio = st.selectbox("Has Radio?", ["Yes", "No"], key="td_radio")
+        has_air_conditioning = st.selectbox("Has Air Conditioning?", ["Yes", "No"], key="td_ac")
+        has_power_windows_td = st.selectbox("Has Power Windows?", ["Yes", "No"], key="td_power_windows")
+        has_navigation = st.selectbox("Has Navigation System?", ["Yes", "No"], key="td_navigation")
+        navigation_condition = st.selectbox("Navigation Condition", ["Working", "Not Working"], key="td_navigation_condition") if has_navigation=="Yes" else None
+    
+        dashboard_instruments = st.selectbox("Dashboard Instruments Condition", ["Good", "Average", "Faulty"], key="td_dashboard_instruments")
+        interior_lights_td = st.selectbox("Interior Light Condition", ["Working", "Faulty"], key="td_interior_lights")
+        test_drive_comments = st.text_area("Test Drive / Functional Comments", key="td_comments")
+    
+    
+    # --- Final Comments ---
+    with st.expander("Final Comments", expanded=False):
+        inspector_name = st.text_input("Inspector Name", key="final_inspector_name")
+        overall_condition = st.selectbox("Overall Vehicle Condition", ["Excellent", "Good", "Average", "Poor"], key="final_overall_condition")
+        final_comments = st.text_area("Final Remarks / Notes", key="final_comments")
+    
+    # --- Inject CSS for green button ---
+    st.markdown("""
+    <style>
+    div.stButton > button:first-child {
+        background-color: #28a745;
+        color: white;
+        padding: 8px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        border-radius: 8px;
+    }
+    div.stButton > button:first-child:hover {
+        background-color: #218838;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    if st.button("Generate Report"):
+        # --- 1. Highlights ---
+        highlights = {
+            "reference_id": reference_id,
+            "mileage": mileage,
+            "color": color,
+            "fuel_type": fuel_type,
+            "transmission": transmission,
+            "drive_type": drive_type,
+            "pickup_location": pickup_location,
+            "registration_city": registration_city,
+            "registration_type": registration_type,
+            "hilight_image_b64": highlight_images_b64,
+            "highlight_images": [f.name for f in highlight_images] if highlight_images else []
+        }
+    
+        # --- 2. Car Details ---
+        car_details = {
+            "make": make,
+            "model": model,
+            "variant": variant,
+            "model_year": model_year,
+            "reg_year": reg_year,
+            "engine_capacity": engine_capacity,
+            "seating_capacity": seating_capacity,
+            "color_code": color_code,
+            "chassis_number": chassis_number,
+            "engine_number": engine_number
+        }
+    
+        # --- 3. Documents ---
+        documents = {
+            "original_book": original_book,
+            "original_card": original_card,
+            "original_file": original_file,
+            "number_plate_condition": number_plate_condition,
+            "registration_certificate": registration_certificate,
+            "insurance_copy": insurance_copy,
+            "no_of_owners": no_of_owners,
+            "no_of_keys": no_of_keys
+        }
+    
+        # --- 4. Interior ---
+        interior = {
+            "dashboard": dashboard,
+            "seats": seats,
+            "roof_liner": roof_liner,
+            "ac_heater": ac_heater,
+            "infotainment": infotainment,
+            "seat_belts": seat_belts,
+            "interior_lights": interior_lights,
+            "pedals": pedals,
+            "interior_comments": interior_comments
+        }
+    
+        # --- 5. Car Body Evaluation ---
+        car_body = {
+            "body_images": [f.name for f in body_images] if body_images else [],
+            "panels": {
+                "Front Bumper": front_bumper,
+                "Bonnet": bonnet,
+                "Front Windscreen": front_windscreen,
+                "Front Left Fender": front_left_fender,
+                "Left A-Pillar": left_a_pillar,
+                "Front Left Door": front_left_door,
+                "Roof": roof,
+                "Left B-Pillar": left_b_pillar,
+                "Back Left Door": back_left_door,
+                "Left C-Pillar": left_c_pillar,
+                "Left D-Pillar": left_d_pillar,
+                "Back Left Quarter Panel": back_left_quarter_panel,
+                "Rear Bumper": rear_bumper,
+                "Trunk Lid": trunk_lid,
+                "Back Right Quarter Panel": back_right_quarter_panel,
+                "Rear Windscreen": rear_windscreen,
+                "Right D-Pillar": right_d_pillar,
+                "Right C-Pillar": right_c_pillar,
+                "Back Right Door": back_right_door,
+                "Right B-Pillar": right_b_pillar,
+                "Front Right Door": front_right_door,
+                "Right A-Pillar": right_a_pillar,
+                "Front Right Fender": front_right_fender
+            },
+            "overall_exterior_condition": exterior_condition,
+            "overall_interior_condition": interior_condition,
+            "comments": car_body_comments
+        }
+    
+        # --- 6. Mechanical ---
+        mechanical = {
+            "engine_condition": engine_condition,
+            "transmission_function": transmission_function,
+            "clutch_condition": clutch_condition,
+            "catalytic_converter": catalytic_converter,
+            "radiator_condition": radiator_condition,
+            "engine_noise": engine_noise,
+            "inner_bonnet_condition": inner_bonnet_condition,
+            "battery_condition": battery_elec,
+            "abs_present": abs_present,
+            "exhaust_smoke": exhaust_smoke,
+            "engine_oil_condition": engine_oil_condition,
+            "mechanical_comments": mechanical_comments
+        }
+    
+        # --- 7. Suspension ---
+        suspension = {
+            "shock_absorbers": {
+                "Front Left": front_left_shock,
+                "Front Right": front_right_shock,
+                "Back Left": back_left_shock,
+                "Back Right": back_right_shock
+            },
+            "axles": {
+                "Front Left": front_left_axle,
+                "Front Right": front_right_axle,
+                "Back Left": back_left_axle,
+                "Back Right": back_right_axle
+            },
+            "steering_alignment": steering_alignment,
+            "suspension_noise": suspension_noise,
+            "suspension_comments": suspension_comments
+        }
+    
+        # --- 8. Electrical ---
+        electrical = {
+            "headlights": headlights,
+            "tail_lights": tail_lights,
+            "indicators": indicators,
+            "brake_lights": brake_lights,
+            "power_windows": power_windows,
+            "central_locking": central_locking,
+            "battery_condition": battery_elec,
+            "wiring": wiring,
+            "electrical_comments": electrical_comments
+        }
+    
+        # --- 9. Tires ---
+        tires = {
+            "front_left": tire_fl,
+            "front_right": tire_fr,
+            "rear_left": tire_rl,
+            "rear_right": tire_rr,
+            "spare_tire_condition": spare_tire_condition,
+            "comments": tire_comments
+        }
+    
+        # --- 10. Accessories ---
+        accessories = {
+            "fog_lamp": has_fog_lamp,
+            "immobilizer_key": has_immobilizer_key,
+            "push_start": has_push_start,
+            "upholstery_type": upholstery_type,
+            "electric_seats": has_electric_seats,
+            "immobiliser": has_immobiliser,
+            "retractable_side_mirrors": has_retractable_side_mirrors,
+            "tool_kit": has_tool_kit,
+            "puncture_kit": has_puncture_kit,
+            "spare_wheel": has_spare_wheel
+        }
+    
+        # --- 11. Test Drive ---
+        test_drive = {
+            "engine_function": engine_function,
+            "transmission_condition": transmission_condition,
+            "brake_function": brake_function,
+            "suspension_function": suspension_function,
+            "steering_function": steering_function,
+            "has_radio": has_radio,
+            "has_air_conditioning": has_air_conditioning,
+            "has_power_windows": has_power_windows_td,
+            "has_navigation": has_navigation,
+            "navigation_condition": navigation_condition if has_navigation=="Yes" else "N/A",
+            "dashboard_instruments": dashboard_instruments,
+            "interior_light_condition": interior_lights_td,
+            "comments": test_drive_comments
+        }
+    
+        # --- 12. Final Comments ---
+        final = {
+            "inspector_name": inspector_name,
+            "overall_condition": overall_condition,
+            "final_comments": final_comments
+        }
+    
+        def calculate_completion(section_dict, exclude_fields=[]):
+            total_fields = 0
+            filled_fields = 0
+            for key, value in section_dict.items():
+                if key in exclude_fields:
+                    continue
+                total_fields += 1
+                if value not in [None, "", [], {}]:
+                    filled_fields += 1
+            if total_fields == 0:
+                return 0
+            return round((filled_fields / total_fields) * 100, 0)
+        
+        highlights_completion = calculate_completion(highlights, exclude_fields=["hilight_image_b64", "highlight_images"])
+        car_details_completion = calculate_completion(car_details)
+        documents_completion = calculate_completion(documents)
+        interior_completion = calculate_completion(interior, exclude_fields=["interior_comments"])
+        car_body_completion = calculate_completion(car_body["panels"])
+        mechanical_completion = calculate_completion(mechanical, exclude_fields=["mechanical_comments"])
+        suspension_completion = calculate_completion({**suspension["shock_absorbers"], **suspension["axles"]})
+        electrical_completion = calculate_completion(electrical, exclude_fields=["electrical_comments"])
+        tires_completion = calculate_completion(tires, exclude_fields=["comments"])
+        accessories_completion = calculate_completion(accessories)
+        test_drive_completion = calculate_completion(test_drive, exclude_fields=["comments"])
+        final_completion = calculate_completion(final)
+    
+    
+    
+        # --- Load template and render ---
+        with open(TEMPLATE_PATH) as f:
+            template = Template(f.read())
+    
+        html = template.render(
+            date=datetime.now().strftime("%d-%b-%Y"),
+            highlights=highlights,
+            car_details=car_details,
+            documents=documents,
+            interior=interior,
+            car_body=car_body,
+            car_body_panels=car_body['panels'],
+            mechanical=mechanical,
+            suspension=suspension,
+            suspension_parts={
+                "shock_absorbers": suspension["shock_absorbers"],
+                "axles": suspension["axles"]
+            },
+            electrical=electrical,
+            tires=tires,
+            accessories=accessories,
+            test_drive=test_drive,
+            final=final,
+            completion={
+            "highlights": highlights_completion,
+            "car_details": car_details_completion,
+            "documents": documents_completion,
+            "interior": interior_completion,
+            "car_body": car_body_completion,
+            "mechanical": mechanical_completion,
+            "suspension": suspension_completion,
+            "electrical": electrical_completion,
+            "tires": tires_completion,
+            "accessories": accessories_completion,
+            "test_drive": test_drive_completion,
+            "final": final_completion
+        }
+        )
+    
+        # --- Convert to bytes for download ---
+        report_bytes = html.encode("utf-8")
+        report_filename = f"{make}_{model}_report.html"
+        st.markdown("""
+            <style>
+            div.stDownloadButton > button:first-child {
+                background-color: #28a745;
+                color: white;
+                font-weight: bold;
+            }
+            div.stDownloadButton > button:first-child:hover {
+                background-color: #218838;
+                color: white;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+
+        # --- Download button ---
+        st.download_button(
+            label="📥 Download Report",
+            data=report_bytes,
+            file_name=report_filename,
+            mime="text/html"
+        )
+    
+        st.success("✅ Report ready for download!")
+        st.balloons()
+    

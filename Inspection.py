@@ -634,38 +634,220 @@ with tab1:
             "final_comments": final_comments
         }
     
-        def calculate_completion(section_dict, exclude_fields=[]):
-            total_fields = 0
-            filled_fields = 0
-            for key, value in section_dict.items():
+        # --- New function: Calculate condition-based percentage ---
+        def calculate_condition_score(section_dict, exclude_fields=None):
+            """
+            Calculate a condition-based percentage for a section dictionary.
+
+            Rules:
+            - Presence-only fields (make/model/chassis/etc.) -> 100 if non-empty, else 0.
+            - Condition keywords (good/average/scratched/damaged/working/not working/yes/no etc.) -> mapped scores.
+            - Numeric values (ints/floats) -> treated as percent if in 0-100 range, otherwise normalized to [0,100] heuristically.
+            - Nested dicts -> handled recursively (average of nested items).
+            - Unknown strings -> neutral mid score (0.7 by default), but lowered from previous behavior to avoid skew.
+            """
+
+            if exclude_fields is None:
+                exclude_fields = []
+
+            # Fields that are identity / presence-only (not conditions)
+            PRESENCE_ONLY = {
+                "make", "model", "variant", "model_year", "reg_year", "registration_city",
+                "registration_type", "chassis_number", "engine_number", "color_code",
+                "reference_id", "pickup_location", "inspector_name"
+            }
+
+            # Mapping for condition-like words -> score between 0 and 1
+            condition_map = {
+                "excellent": 1.0,
+                "like new": 1.0,
+                "good": 0.95,
+                "working": 0.95,
+                "yes": 1.0,
+                "ok": 0.8,
+                "okay": 0.8,
+                "average": 0.7,
+                "fair": 0.65,
+                "minor": 0.75,
+                "minor scratch": 0.75,
+                "scratched": 0.5,
+                "repaired": 0.6,
+                "replaced": 0.9,
+                "needs service": 0.4,
+                "needs replacement": 0.2,
+                "worn": 0.45,
+                "weak": 0.3,
+                "leaking": 0.2,
+                "damaged": 0.15,
+                "bad": 0.15,
+                "poor": 0.1,
+                "not working": 0.1,
+                "no": 0.0,
+                "missing": 0.0,
+                "dead": 0.0,
+                "none": 0.0,
+                "n/a": 0.0,
+                "na": 0.0
+            }
+
+            # Helper to score a single value
+            def score_value(key, value):
+                # exclude explicit fields
                 if key in exclude_fields:
-                    continue
-                total_fields += 1
-                if value not in [None, "", [], {}]:
-                    filled_fields += 1
-            if total_fields == 0:
-                return 0
-            return round((filled_fields / total_fields) * 100, 0)
+                    return None
+
+                # nested dict -> compute nested average
+                if isinstance(value, dict):
+                    nested = []
+                    for k, v in value.items():
+                        s = score_value(k, v)
+                        if s is not None:
+                            nested.append(s)
+                    return round(sum(nested) / len(nested), 3) if nested else None
+
+                # lists -> attempt to score each item (presence or nested)
+                if isinstance(value, list):
+                    if not value:
+                        return None
+                    # if list of strings/images -> treat presence as full
+                    # else try to score items
+                    scores = []
+                    for itm in value:
+                        if isinstance(itm, (str, int, float)):
+                            # presence for image strings
+                            if isinstance(itm, str) and (itm.lower().startswith("data:") or len(itm) > 0):
+                                scores.append(1.0)
+                            elif isinstance(itm, (int, float)):
+                                # numeric in list: normalize if 0-100 treat as percent
+                                n = itm
+                                if 0 <= n <= 100:
+                                    scores.append(n/100.0)
+                                else:
+                                    scores.append(0.7)
+                            else:
+                                scores.append(0.7)
+                        elif isinstance(itm, dict):
+                            nested_score = score_value(key, itm)
+                            if nested_score is not None:
+                                scores.append(nested_score)
+                    return round(sum(scores) / len(scores), 3) if scores else None
+
+                # None or empty string -> no score
+                if value is None:
+                    return None
+                vstr = str(value).strip()
+                if vstr == "":
+                    return None
+
+                # If key is presence only -> 100%
+                if key.lower() in PRESENCE_ONLY:
+                    return 1.0
+
+                # If it's a numeric-like string or number -> try to interpret
+                try:
+                    num = float(vstr.replace(",", "").replace("%", ""))
+                    # if already 0-100 treat as percent
+                    if 0 <= num <= 100:
+                        return max(0.0, min(1.0, num / 100.0))
+                    # otherwise normalize with a heuristic (cap to 100)
+                    # e.g., seating_capacity, engine_capacity -> presence-based
+                    # default to presence mid score
+                    return 0.9 if num > 0 else 0.0
+                except Exception:
+                    pass
+                
+                # Lowercase textual mapping
+                key_lower = vstr.lower()
+                if key_lower in condition_map:
+                    return condition_map[key_lower]
+
+                # Some common multi-word matching
+                for kword, score in condition_map.items():
+                    if kword in key_lower:
+                        return score
+
+                # Unknown string - give neutral mid score (0.7) instead of high 0.95
+                # This avoids single unrecognized field from pulling section to 70-95% incorrectly.
+                return 0.7
+
+            # iterate and compute
+            scores = []
+            for k, v in section_dict.items():
+                s = score_value(k, v)
+                if s is not None:
+                    scores.append(s)
+
+            if not scores:
+                return 0.0
+
+            # final percent 0-100
+            percent = round((sum(scores) / len(scores)) * 100, 1)
+            return percent
+
+
+        # --- Now compute section scores using the new function ---
+        highlights_completion = calculate_condition_score(
+            highlights, exclude_fields=["hilight_image_b64", "highlight_images"]
+        )
+        car_details_completion = calculate_condition_score(car_details)
+        documents_completion = calculate_condition_score(documents)
+        interior_completion = calculate_condition_score(interior, exclude_fields=["interior_comments"])
+        car_body_completion = calculate_condition_score(car_body.get("panels", {}))
+        mechanical_completion = calculate_condition_score(mechanical, exclude_fields=["mechanical_comments"])
         
-        highlights_completion = calculate_completion(highlights, exclude_fields=["hilight_image_b64", "highlight_images"])
-        car_details_completion = calculate_completion(car_details)
-        documents_completion = calculate_completion(documents)
-        interior_completion = calculate_completion(interior, exclude_fields=["interior_comments"])
-        car_body_completion = calculate_completion(car_body["panels"])
-        mechanical_completion = calculate_completion(mechanical, exclude_fields=["mechanical_comments"])
-        suspension_completion = calculate_completion({**suspension["shock_absorbers"], **suspension["axles"]})
-        electrical_completion = calculate_completion(electrical, exclude_fields=["electrical_comments"])
-        tires_completion = calculate_completion(tires, exclude_fields=["comments"])
-        accessories_completion = calculate_completion(accessories)
-        test_drive_completion = calculate_completion(test_drive, exclude_fields=["comments"])
-        final_completion = calculate_completion(final)
-    
-    
-    
-        # --- Load template and render ---
+        # handle suspension (both parts merged)
+        suspension_data = {}
+        if "shock_absorbers" in suspension:
+            suspension_data.update(suspension["shock_absorbers"])
+        if "axles" in suspension:
+            suspension_data.update(suspension["axles"])
+        suspension_completion = calculate_condition_score(suspension_data)
+        
+        electrical_completion = calculate_condition_score(electrical, exclude_fields=["electrical_comments"])
+        tires_completion = calculate_condition_score(tires, exclude_fields=["comments"])
+        accessories_completion = calculate_condition_score(accessories)
+        test_drive_completion = calculate_condition_score(test_drive, exclude_fields=["comments"])
+        final_completion = calculate_condition_score(final)
+        
+        # --- Completion dictionary ---
+        completion = {
+            "highlights": highlights_completion,
+            "car_details": car_details_completion,
+            "documents": documents_completion,
+            "interior": interior_completion,
+            "car_body": car_body_completion,
+            "mechanical": mechanical_completion,
+            "suspension": suspension_completion,
+            "electrical": electrical_completion,
+            "tires": tires_completion,
+            "accessories": accessories_completion,
+            "test_drive": test_drive_completion,
+            "final": final_completion
+        }
+        
+        # --- Calculate overall condition ---
+        all_scores = [v for v in completion.values() if v > 0]
+        overall_condition = round(sum(all_scores) / len(all_scores), 1) if all_scores else 0
+        
+
+
+        # --- ✅ Calculate Overall Vehicle Condition Percentage ---
+        section_scores = [v for v in completion.values() if isinstance(v, (int, float))]
+        if section_scores:
+            overall_condition_percent = round(sum(section_scores) / len(section_scores), 1)
+        else:
+            overall_condition_percent = 0
+        def calculate_condition_percent(section_dict):
+            score_map = {"Good": 100, "Average": 60, "Bad": 30, "Poor": 10, "N/A": 0, "": 0}
+            valid_values = [score_map.get(str(v).title(), 0) for v in section_dict.values() if isinstance(v, str)]
+            if not valid_values:
+                return 0
+            return round(sum(valid_values) / len(valid_values), 1)
+        
         with open(TEMPLATE_PATH) as f:
             template = Template(f.read())
-    
+
+        # --- Render the HTML template ---
         html = template.render(
             date=datetime.now().strftime("%d-%b-%Y"),
             highlights=highlights,
@@ -685,22 +867,10 @@ with tab1:
             accessories=accessories,
             test_drive=test_drive,
             final=final,
-            completion={
-            "highlights": highlights_completion,
-            "car_details": car_details_completion,
-            "documents": documents_completion,
-            "interior": interior_completion,
-            "car_body": car_body_completion,
-            "mechanical": mechanical_completion,
-            "suspension": suspension_completion,
-            "electrical": electrical_completion,
-            "tires": tires_completion,
-            "accessories": accessories_completion,
-            "test_drive": test_drive_completion,
-            "final": final_completion
-        }
+            completion=completion,
+            overall_condition=overall_condition_percent  # ✅ pass it to template
         )
-    
+        
         # --- Convert to bytes for download ---
         report_bytes = html.encode("utf-8")
         report_filename = f"{make}_{model}_report.html"

@@ -79,28 +79,49 @@ with tab2:
         const img = new Image();
         img.src = "data:image/jpeg;base64,{img_base64}";
         img.onload = () => {{
-            // Set canvas size to image natural size (scaled down if needed)
-            const maxWidth = 600;  // max width of canvas
+            const maxWidth = 600;  
             const scale = Math.min(maxWidth / img.naturalWidth, 1);
             canvas.width = img.naturalWidth * scale;
             canvas.height = img.naturalHeight * scale;
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         }};
     
-        // Click to select damage
-        canvas.addEventListener('click', (e) => {{
+        function getCanvasCoordinates(e) {{
             const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            damageSelect.style.left = e.clientX + 'px';
-            damageSelect.style.top = e.clientY + 'px';
+            let x, y;
+            if (e.touches) {{  // Touch event
+                x = e.touches[0].clientX - rect.left;
+                y = e.touches[0].clientY - rect.top;
+            }} else {{  // Mouse event
+                x = e.clientX - rect.left;
+                y = e.clientY - rect.top;
+            }}
+            // Adjust for canvas scaling
+            x = x * (canvas.width / rect.width);
+            y = y * (canvas.height / rect.height);
+            return {{x, y}};
+        }}
+    
+        function showDropdown(x, y, clientX, clientY) {{
+            damageSelect.style.left = clientX + 'px';
+            damageSelect.style.top = clientY + 'px';
             damageSelect.style.display = 'block';
             damageSelect.dataset.x = x;
             damageSelect.dataset.y = y;
             damageSelect.focus();
+        }}
+    
+        canvas.addEventListener('click', (e) => {{
+            const coords = getCanvasCoordinates(e);
+            showDropdown(coords.x, coords.y, e.clientX, e.clientY);
         }});
     
-        // Add annotation
+        canvas.addEventListener('touchstart', (e) => {{
+            e.preventDefault();  // prevent scrolling
+            const coords = getCanvasCoordinates(e);
+            showDropdown(coords.x, coords.y, e.touches[0].clientX, e.touches[0].clientY);
+        }});
+    
         damageSelect.addEventListener('change', (e) => {{
             const code = e.target.value;
             if(!code) return;
@@ -128,7 +149,6 @@ with tab2:
             damageSelect.value='';
         }});
     
-        // Download
         downloadBtn.addEventListener('click', () => {{
             const link = document.createElement('a');
             link.download = 'car_damage.png';
@@ -139,8 +159,9 @@ with tab2:
         """
     
         components.html(html_code, height=700)
-    
-    
+
+
+
     # ================================
 # --- INSPECTION FORM TAB ---
 # ================================

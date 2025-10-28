@@ -88,19 +88,20 @@ with tab2:
     
         function getCanvasCoordinates(e) {{
             const rect = canvas.getBoundingClientRect();
-            let x, y;
-            if (e.touches) {{  // Touch event
-                x = e.touches[0].clientX - rect.left;
-                y = e.touches[0].clientY - rect.top;
-            }} else {{  // Mouse event
-                x = e.clientX - rect.left;
-                y = e.clientY - rect.top;
+            let clientX, clientY;
+            if (e.touches) {{
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            }} else {{
+                clientX = e.clientX;
+                clientY = e.clientY;
             }}
-            // Adjust for canvas scaling
-            x = x * (canvas.width / rect.width);
-            y = y * (canvas.height / rect.height);
+            // Compute coordinates relative to canvas
+            const x = (clientX - rect.left) * (canvas.width / rect.width);
+            const y = (clientY - rect.top) * (canvas.height / rect.height);
             return {{x, y}};
         }}
+
     
         function showDropdown(x, y, clientX, clientY) {{
             damageSelect.style.left = clientX + 'px';

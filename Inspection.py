@@ -5,6 +5,54 @@ import os
 from jinja2 import Template
 from datetime import datetime
 
+# --- Login Credentials ---
+USERNAME = "admin"
+PASSWORD = "1234"
+
+# --- Initialize login state ---
+if "logged_in" not in st.session_state:
+    st.session_state["logged_in"] = False
+# --- CSS for green login button ---
+st.markdown("""
+    <style>
+    /* Login Button */
+    div.stButton > button:first-child {
+        background-color: #28a745;  /* green */
+        color: white;
+        font-weight: bold;
+        padding: 8px 20px;
+        font-size: 16px;
+        border-radius: 8px;
+    }
+    div.stButton > button:first-child:hover {
+        background-color: #218838; /* darker green on hover */
+    }
+
+    /* Optional: make letters bold or bigger if needed */
+    .green-letter {
+        color: #28a745;
+        font-weight: bold;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# --- Login function ---
+def login():
+    st.title("🔒 Login Required")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    if st.button("Login"):
+        if username == USERNAME and password == PASSWORD:
+            st.session_state["logged_in"] = True
+            st.rerun()  # immediately rerun the app
+        else:
+            st.error("❌ Incorrect username or password")
+
+# --- Stop app until logged in ---
+if not st.session_state["logged_in"]:
+    login()
+    st.stop()
+
 # ================================
 # --- CONFIGURATION ---
 # ================================
@@ -166,9 +214,20 @@ with tab2:
     # ================================
 # --- INSPECTION FORM TAB ---
 # ================================
+with open("CompanyLogo.jpg", "rb") as f:
+    logo_bytes = f.read()
+    logo_base64 = base64.b64encode(logo_bytes).decode()
+
 with tab1:
-    st.title("🚘 CAROBAR Inspection System")
-    st.markdown("### 🧾 Fill the Vehicle Inspection Form")
+    st.markdown(f"""
+    <div style="display:flex; align-items:center; margin-bottom:10px;">
+        <img src="data:image/png;base64,{logo_base64}" style="height:50px; margin-right:10px;">
+        <h1 style="font-size:32px; margin:0;">
+            INSPECTION REPORT GENERATOR
+        </h1>
+    </div>
+    <h3 style="margin-top:0;">🧾 Fill the Vehicle Inspection Form</h3>
+    """, unsafe_allow_html=True)
 
     # ========================
     # --- Highlights ---

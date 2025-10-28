@@ -17,6 +17,50 @@
         margin-bottom: 5px;
     }
 
+    /* --- Overall Condition Section --- */
+    .overall-condition {
+        margin: 20px auto;
+        padding: 15px;
+        max-width: 500px;
+        border-radius: 10px;
+        background: #f9fdf9;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+
+    .overall-condition:hover {
+        transform: scale(1.02);
+    }
+
+    .overall-condition h3 {
+        color: #2e7d32;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .condition-bar {
+        width: 80%;
+        height: 14px;
+        background: #e0e0e0;
+        border-radius: 10px;
+        margin: 0 auto 8px;
+        overflow: hidden;
+    }
+
+    .condition-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4caf50, #81c784);
+        border-radius: 10px;
+        width: 0%;
+        transition: width 1s ease-in-out;
+    }
+
+    .condition-text {
+        font-size: 1.1em;
+        color: #333;
+    }
+
     .report-header {
         text-align: center;
         background-color: #eaf3f8;
@@ -32,6 +76,7 @@
         margin-bottom: 15px;
         border-left: 4px solid #1abc9c;
         box-shadow: 0px 2px 6px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
     }
 
     .accordion-header {
@@ -40,7 +85,7 @@
         font-weight: bold;
         font-size: 1.1em;
         user-select: none;
-        transition: background 0.3s ease;
+        transition: background 0.3s ease, color 0.4s ease;
     }
 
     .accordion-header:hover {
@@ -57,15 +102,20 @@
     }
 
     .accordion.active .accordion-content {
-        max-height: 2000px; /* large enough to fit content */
+        max-height: 2000px;
         padding: 15px 20px;
+    }
+
+    /* Dynamic color for condition score */
+    .accordion[data-score] .accordion-header {
+        color: hsl(calc(({{ percent | default(100) }} * 1.2)), 70%, 30%);
     }
 
     table {
         width: 100%;
         border-collapse: collapse;
         margin-bottom: 10px;
-        table-layout: fixed; /* makes table cells wrap nicely on mobile */
+        table-layout: fixed;
         word-wrap: break-word;
     }
 
@@ -95,44 +145,18 @@
 
     /* Responsive Styles */
     @media screen and (max-width: 768px) {
-        body {
-            padding: 10px;
-        }
-
-        .report-header {
-            padding: 15px;
-        }
-
-        .accordion-header {
-            font-size: 1em;
-            padding: 12px 15px;
-        }
-
-        .accordion-content {
-            padding: 12px 15px;
-        }
-
-        table, th, td {
-            font-size: 0.9em;
-        }
-
-        .car-images img {
-            max-width: 45%;
-        }
+        body { padding: 10px; }
+        .report-header { padding: 15px; }
+        .accordion-header { font-size: 1em; padding: 12px 15px; }
+        .accordion-content { padding: 12px 15px; }
+        table, th, td { font-size: 0.9em; }
+        .car-images img { max-width: 45%; }
     }
 
     @media screen and (max-width: 480px) {
-        .accordion-header {
-            font-size: 0.95em;
-        }
-
-        table, th, td {
-            font-size: 0.85em;
-        }
-
-        .car-images img {
-            max-width: 100%;
-        }
+        .accordion-header { font-size: 0.95em; }
+        table, th, td { font-size: 0.85em; }
+        .car-images img { max-width: 100%; }
     }
 </style>
 
@@ -147,7 +171,18 @@
     <p><strong>Car:</strong> {{ car_details.make }} {{ car_details.model }} {{ car_details.variant }} ({{ car_details.model_year }})</p>
 </div>
 
-<!-- Car Images Gallery -->
+<!-- Overall Vehicle Condition -->
+<div class="overall-condition">
+    <h3>Overall Vehicle Condition</h3>
+    <div class="condition-bar">
+        <div class="condition-fill" style="width: {{ overall_condition }}%;"></div>
+    </div>
+    <p class="condition-text">
+        <strong>{{ overall_condition }}%</strong> Overall Condition
+    </p>
+</div>
+
+<!-- Car Images -->
 {% if highlights.hilight_image_b64 %}
 <div class="car-images" style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:20px;">
     {% for img_b64 in highlights.hilight_image_b64 %}
@@ -156,13 +191,16 @@
 </div>
 {% endif %}
 
-
-
-<!-- Accordion Template with Completion % -->
+<!-- Accordion Template -->
 {% macro accordion(title, content, percent) %}
 <div class="accordion">
     <div class="accordion-header">
-        {{ title }} - {{ percent }}% filled
+        {{ title }} -
+        <span style="
+            color: {% if percent >= 80 %}#2e7d32{% elif percent >= 50 %}#f9a825{% else %}#c62828{% endif %};
+            font-weight: bold;">
+            {{ percent }}%
+        </span>
     </div>
     <div class="accordion-content">
         {{ content }}
@@ -230,9 +268,11 @@
 <tr><td class="field-label">{{ panel }}</td><td>{{ condition }}</td></tr>
 {% endfor %}
 </table>
-<div class="comments"><strong>Overall Exterior:</strong> {{ car_body.overall_exterior_condition }}<br>
+<div class="comments">
+<strong>Overall Exterior:</strong> {{ car_body.overall_exterior_condition }}<br>
 <strong>Overall Interior:</strong> {{ car_body.overall_interior_condition }}<br>
-<strong>Comments:</strong> {{ car_body.comments }}</div>
+<strong>Comments:</strong> {{ car_body.comments }}
+</div>
 {% endset %}
 {{ accordion('Car Body Evaluation', car_body_content, completion.car_body) }}
 
@@ -254,14 +294,16 @@
 {% set suspension_content %}
 <table>
 <tr><th>Part</th><th>Status</th></tr>
-{% for part_group, group_values in suspension_parts.items() %}
-<tr><td colspan="2" class="field-label">{{ part_group.replace('_',' ').title() }}</td></tr>
-{% for name, value in group_values.items() %}
-<tr><td style="padding-left:20px">{{ name }}</td><td>{{ value }}</td></tr>
+{% for group, items in suspension_parts.items() %}
+<tr><td colspan="2" class="field-label">{{ group.replace('_',' ').title() }}</td></tr>
+{% for key, value in items.items() %}
+<tr><td style="padding-left:20px">{{ key }}</td><td>{{ value }}</td></tr>
 {% endfor %}
 {% endfor %}
 </table>
+{% if suspension.suspension_comments %}
 <div class="comments"><strong>Comments:</strong> {{ suspension.suspension_comments }}</div>
+{% endif %}
 {% endset %}
 {{ accordion('Suspension', suspension_content, completion.suspension) }}
 
@@ -329,18 +371,24 @@
 {{ accordion('Final Comments', final_content, completion.final) }}
 
 <script>
-    const accordions = document.querySelectorAll('.accordion');
-
-    accordions.forEach(accordion => {
-        const header = accordion.querySelector('.accordion-header');
-
-        // Use pointerdown for touch + mouse support
+    document.querySelectorAll('.accordion-header').forEach(header => {
         header.addEventListener('pointerdown', () => {
-            accordion.classList.toggle('active');
+            header.parentElement.classList.toggle('active');
         });
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const fill = document.querySelector(".condition-fill");
+        if (fill) {
+            fill.style.width = "0%";
+            setTimeout(() => {
+                fill.style.width = "{{ overall_condition }}%";
+            }, 300);
+        }
     });
 </script>
 
-
 </body>
+
+
 </html>

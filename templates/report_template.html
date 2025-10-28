@@ -47,22 +47,26 @@
         background-color: #e1f4f1;
     }
 
+    /* Smooth accordion transitions */
     .accordion-content {
-        display: none;
-        padding: 15px 20px;
+        max-height: 0;
+        overflow: hidden;
+        padding: 0 20px;
         border-top: 1px solid #ddd;
-        animation: fadeIn 0.3s ease;
+        transition: max-height 0.35s ease, padding 0.35s ease;
     }
 
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+    .accordion.active .accordion-content {
+        max-height: 2000px; /* large enough to fit content */
+        padding: 15px 20px;
     }
 
     table {
         width: 100%;
         border-collapse: collapse;
         margin-bottom: 10px;
+        table-layout: fixed; /* makes table cells wrap nicely on mobile */
+        word-wrap: break-word;
     }
 
     th, td {
@@ -86,9 +90,53 @@
         padding: 10px;
         border-radius: 6px;
         margin-top: 5px;
+        word-wrap: break-word;
     }
 
+    /* Responsive Styles */
+    @media screen and (max-width: 768px) {
+        body {
+            padding: 10px;
+        }
+
+        .report-header {
+            padding: 15px;
+        }
+
+        .accordion-header {
+            font-size: 1em;
+            padding: 12px 15px;
+        }
+
+        .accordion-content {
+            padding: 12px 15px;
+        }
+
+        table, th, td {
+            font-size: 0.9em;
+        }
+
+        .car-images img {
+            max-width: 45%;
+        }
+    }
+
+    @media screen and (max-width: 480px) {
+        .accordion-header {
+            font-size: 0.95em;
+        }
+
+        table, th, td {
+            font-size: 0.85em;
+        }
+
+        .car-images img {
+            max-width: 100%;
+        }
+    }
 </style>
+
+
 </head>
 <body>
 
@@ -280,15 +328,19 @@
 {% endset %}
 {{ accordion('Final Comments', final_content, completion.final) }}
 
-
 <script>
-    const accordions = document.querySelectorAll('.accordion-header');
-    accordions.forEach(header => {
-        header.addEventListener('click', () => {
-            const content = header.nextElementSibling;
-            content.style.display = content.style.display === 'block' ? 'none' : 'block';
+    const accordions = document.querySelectorAll('.accordion');
+
+    accordions.forEach(accordion => {
+        const header = accordion.querySelector('.accordion-header');
+
+        // Use pointerdown for touch + mouse support
+        header.addEventListener('pointerdown', () => {
+            accordion.classList.toggle('active');
         });
     });
 </script>
+
+
 </body>
 </html>

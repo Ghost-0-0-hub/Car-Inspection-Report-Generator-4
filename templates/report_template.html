@@ -86,10 +86,28 @@
         font-size: 1.1em;
         user-select: none;
         transition: background 0.3s ease, color 0.4s ease;
+        position: relative;
+        padding-right: 35px; /* space for arrow */
     }
 
     .accordion-header:hover {
         background-color: #e1f4f1;
+    }
+
+    /* --- Arrow Styles --- */
+    .accordion-header::after {
+        content: "▶";
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%) rotate(0deg);
+        font-size: 1em;
+        color: #1abc9c;
+        transition: transform 0.3s ease;
+    }
+
+    .accordion.active .accordion-header::after {
+        transform: translateY(-50%) rotate(90deg);
     }
 
     /* Smooth accordion transitions */
@@ -104,11 +122,6 @@
     .accordion.active .accordion-content {
         max-height: 2000px;
         padding: 15px 20px;
-    }
-
-    /* Dynamic color for condition score */
-    .accordion[data-score] .accordion-header {
-        color: hsl(calc(({{ percent | default(100) }} * 1.2)), 70%, 30%);
     }
 
     table {
@@ -159,9 +172,8 @@
         .car-images img { max-width: 100%; }
     }
 </style>
-
-
 </head>
+
 <body>
 
 <div class="report-header">
@@ -177,9 +189,7 @@
     <div class="condition-bar">
         <div class="condition-fill" style="width: {{ overall_condition }}%;"></div>
     </div>
-    <p class="condition-text">
-        <strong>{{ overall_condition }}%</strong> Overall Condition
-    </p>
+    <p class="condition-text"><strong>{{ overall_condition }}%</strong> Overall Condition</p>
 </div>
 
 <!-- Car Images -->
@@ -389,6 +399,4 @@
 </script>
 
 </body>
-
-
 </html>

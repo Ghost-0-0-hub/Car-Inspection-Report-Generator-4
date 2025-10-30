@@ -432,13 +432,21 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    // Accordion toggle fix for iPhone and desktop
+    // Accordion toggle (mobile + desktop safe)
     document.querySelectorAll(".accordion-header").forEach(header => {
-        const toggleAccordion = () => {
+        const toggleAccordion = (event) => {
+            // Prevent double trigger between touch/click
+            if (event.type === "touchstart") {
+                header.dataset.touched = "true";
+            } else if (event.type === "click" && header.dataset.touched) {
+                delete header.dataset.touched;
+                return; // Skip click if touchstart already fired
+            }
             header.parentElement.classList.toggle("active");
         };
-        header.addEventListener("click", toggleAccordion);       // for desktop
-        header.addEventListener("touchstart", toggleAccordion);  // for iPhone / iPad
+
+        header.addEventListener("touchstart", toggleAccordion, { passive: true });
+        header.addEventListener("click", toggleAccordion);
     });
 
     // Animate condition bar after load
@@ -451,6 +459,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 </script>
+
 
 </body>
 </html>

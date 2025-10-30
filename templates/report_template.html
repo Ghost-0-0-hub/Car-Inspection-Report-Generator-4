@@ -431,21 +431,25 @@
 {{ accordion('Final Comments', final_content, completion.final) }}
 
 <script>
-    document.querySelectorAll('.accordion-header').forEach(header => {
-        header.addEventListener('pointerdown', () => {
-            header.parentElement.classList.toggle('active');
-        });
+document.addEventListener("DOMContentLoaded", function() {
+    // Accordion toggle fix for iPhone and desktop
+    document.querySelectorAll(".accordion-header").forEach(header => {
+        const toggleAccordion = () => {
+            header.parentElement.classList.toggle("active");
+        };
+        header.addEventListener("click", toggleAccordion);       // for desktop
+        header.addEventListener("touchstart", toggleAccordion);  // for iPhone / iPad
     });
 
-    document.addEventListener("DOMContentLoaded", function() {
-        const fill = document.querySelector(".condition-fill");
-        if (fill) {
-            fill.style.width = "0%";
-            setTimeout(() => {
-                fill.style.width = "{{ overall_condition }}%";
-            }, 300);
-        }
-    });
+    // Animate condition bar after load
+    const fill = document.querySelector(".condition-fill");
+    if (fill) {
+        fill.style.width = "0%";
+        setTimeout(() => {
+            fill.style.width = "{{ overall_condition }}%";
+        }, 300);
+    }
+});
 </script>
 
 </body>

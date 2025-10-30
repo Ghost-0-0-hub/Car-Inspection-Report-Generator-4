@@ -373,8 +373,8 @@ with tab1:
     
     # --- Electrical ---
     with st.expander("Electrical", expanded=False):
-        headlights = st.selectbox("Headlights Condition", ["Working", "Faulty"], key="elec_headlights")
-        tail_lights = st.selectbox("Tail Lights Condition", ["Working", "Faulty"], key="elec_tail_lights")
+        headlights = st.selectbox("Headlights Condition", ["Working", "Faulty", "Scratched"], key="elec_headlights")
+        tail_lights = st.selectbox("Tail Lights Condition", ["Working", "Faulty", "Scratched"], key="elec_tail_lights")
         indicators = st.selectbox("Indicators / Blinkers", ["Working", "Faulty"], key="elec_indicators")
         brake_lights = st.selectbox("Brake Lights", ["Working", "Faulty"], key="elec_brake_lights")
         power_windows = st.selectbox("Power Windows", ["Working", "Faulty"], key="elec_power_windows")
@@ -382,6 +382,7 @@ with tab1:
         battery_elec = st.selectbox("Battery Condition", ["Good", "Weak", "Dead"], key='elec_battery')
         wiring = st.selectbox("Wiring Condition", ["Good", "Average", "Poor"], key="elec_wiring")
         electrical_comments = st.text_area("Electrical Comments", key="elec_comments")
+
     
     
     # --- Tires ---

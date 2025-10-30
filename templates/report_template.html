@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head>  
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="theme-color" content="#2e7d32">
 <title>{{ highlights.reference_id }} - {{ car_details.make }} {{ car_details.model }} Inspection Report</title>
 <style>
     body {
@@ -10,6 +13,7 @@
         color: #333;
         margin: 0;
         padding: 20px;
+        font-size: 1.05em; /* slightly larger for phone readability */
     }
 
     h1, h2, h3 {
@@ -61,13 +65,39 @@
         color: #333;
     }
 
+    /* --- Header --- */
     .report-header {
-        text-align: center;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
         background-color: #eaf3f8;
         padding: 20px;
         border-radius: 12px;
         margin-bottom: 20px;
         box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .logo {
+        flex: 0 0 auto;
+        margin-right: 15px;
+    }
+
+    .logo img {
+        height: 70px;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .logo img:hover {
+        transform: scale(1.05);
+    }
+
+    .report-header-text {
+        flex: 1;
+        min-width: 250px;
     }
 
     .accordion {
@@ -87,14 +117,13 @@
         user-select: none;
         transition: background 0.3s ease, color 0.4s ease;
         position: relative;
-        padding-right: 35px; /* space for arrow */
+        padding-right: 35px;
     }
 
     .accordion-header:hover {
         background-color: #e1f4f1;
     }
 
-    /* --- Arrow Styles --- */
     .accordion-header::after {
         content: "▶";
         position: absolute;
@@ -110,7 +139,6 @@
         transform: translateY(-50%) rotate(90deg);
     }
 
-    /* Smooth accordion transitions */
     .accordion-content {
         max-height: 0;
         overflow: hidden;
@@ -134,8 +162,9 @@
 
     th, td {
         text-align: left;
-        padding: 8px;
+        padding: 10px;
         border-bottom: 1px solid #ddd;
+        font-size: 1.05em;
     }
 
     th {
@@ -158,17 +187,18 @@
 
     /* Responsive Styles */
     @media screen and (max-width: 768px) {
-        body { padding: 10px; }
-        .report-header { padding: 15px; }
-        .accordion-header { font-size: 1em; padding: 12px 15px; }
-        .accordion-content { padding: 12px 15px; }
-        table, th, td { font-size: 0.9em; }
+        body { padding: 10px; font-size: 1.05em; }
+        .report-header { padding: 15px; flex-direction: column; text-align: center; }
+        .logo { margin-bottom: 10px; margin-right: 0; }
+        .logo img { height: 60px; }
+        .accordion-header { font-size: 1.05em; padding: 12px 15px; }
+        table, th, td { font-size: 1em; }
         .car-images img { max-width: 45%; }
     }
 
     @media screen and (max-width: 480px) {
-        .accordion-header { font-size: 0.95em; }
-        table, th, td { font-size: 0.85em; }
+        .accordion-header { font-size: 1em; }
+        table, th, td { font-size: 0.95em; }
         .car-images img { max-width: 100%; }
     }
 </style>
@@ -176,13 +206,35 @@
 
 <body>
 
-<div class="report-header">
-    <h1>Vehicle Inspection Report</h1>
-    <p><strong>Date:</strong> {{ date }}</p>
-    <p><strong>Reference ID:</strong> {{ highlights.reference_id }}</p>
-    <p><strong>Car:</strong> {{ car_details.make }} {{ car_details.model }} {{ car_details.variant }} ({{ car_details.model_year }})</p>
-</div>
+<!-- Header with Company Logo -->
+<div class="report-header" style="
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    background-color: #eaf3f8;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+">
+    <div class="logo-section" style="flex: 1; min-width: 150px; text-align: left;">
+        <img src="data:image/jpeg;base64,{{ logo_base64 }}" alt="Company Logo" style="
+            max-height: 70px;
+            border-radius: 8px;
+            object-fit: contain;
+        ">
+    </div>
 
+    <div class="title-section" style="flex: 2; min-width: 250px; text-align: right;">
+        <h1 style="margin: 0; color: #1b4f72;">Vehicle Inspection Report</h1>
+        <p style="margin: 5px 0 0 0;">
+            <strong>Date:</strong> {{ date }} &nbsp; | &nbsp;
+            <strong>Reference ID:</strong> {{ highlights.reference_id }} &nbsp; | &nbsp;
+            <strong>Car:</strong> {{ car_details.make }} {{ car_details.model }} {{ car_details.variant }} ({{ car_details.model_year }})
+        </p>
+    </div>
+</div>
 <!-- Overall Vehicle Condition -->
 <div class="overall-condition">
     <h3>Overall Vehicle Condition</h3>

@@ -432,24 +432,25 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    // Accordion toggle (mobile + desktop safe)
-    document.querySelectorAll(".accordion-header").forEach(header => {
-        const toggleAccordion = (event) => {
-            // Prevent double trigger between touch/click
-            if (event.type === "touchstart") {
-                header.dataset.touched = "true";
-            } else if (event.type === "click" && header.dataset.touched) {
-                delete header.dataset.touched;
-                return; // Skip click if touchstart already fired
-            }
-            header.parentElement.classList.toggle("active");
-        };
 
-        header.addEventListener("touchstart", toggleAccordion, { passive: true });
-        header.addEventListener("click", toggleAccordion);
+    // Function to toggle an accordion
+    function toggleAccordion(header) {
+        header.parentElement.classList.toggle("active");
+    }
+
+    // Add event listeners for all accordion headers
+    document.querySelectorAll(".accordion-header").forEach(header => {
+        // For desktop clicks
+        header.addEventListener("click", () => toggleAccordion(header));
+
+        // For mobile touch taps
+        header.addEventListener("touchend", (e) => {
+            e.preventDefault(); // Prevent double firing
+            toggleAccordion(header);
+        }, { passive: false });
     });
 
-    // Animate condition bar after load
+    // Animate the overall condition bar
     const fill = document.querySelector(".condition-fill");
     if (fill) {
         fill.style.width = "0%";
@@ -457,6 +458,7 @@ document.addEventListener("DOMContentLoaded", function() {
             fill.style.width = "{{ overall_condition }}%";
         }, 300);
     }
+
 });
 </script>
 

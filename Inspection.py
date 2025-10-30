@@ -843,8 +843,12 @@ with tab1:
             if not valid_values:
                 return 0
             return round(sum(valid_values) / len(valid_values), 1)
-        
-        with open(TEMPLATE_PATH) as f:
+        import base64
+
+        with open("CompanyLogo.jpg", "rb") as img_file:
+            logo_base64 = base64.b64encode(img_file.read()).decode('utf-8')
+
+        with open(TEMPLATE_PATH , "r", encoding='utf-8') as f:
             template = Template(f.read())
 
         # --- Render the HTML template ---
@@ -868,7 +872,8 @@ with tab1:
             test_drive=test_drive,
             final=final,
             completion=completion,
-            overall_condition=overall_condition_percent  # ✅ pass it to template
+            overall_condition=overall_condition_percent,
+            logo_base64=logo_base64,  # ✅ pass it to template
         )
         
         # --- Convert to bytes for download ---

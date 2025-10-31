@@ -68,268 +68,284 @@ os.makedirs(REPORTS_DIR, exist_ok=True)
 # ================================
 tab1, tab2 = st.tabs(["Inspection Form", "Damage Diagram"])
 
+import os
+import base64
+import streamlit as st
+import streamlit.components.v1 as components
+
+# --- Example usage with tabs ---
+tab1, tab2 = st.tabs(["Other Section", "Car Damage Diagram"])
+
 with tab2:
-    st.title("Car Damage Diagram")    
-    
-    # ✅ Read image and convert to base64
-    with open("CarDamage.jpg", "rb") as f:
-        img_base64 = base64.b64encode(f.read()).decode()
+    st.title("Car Damage Diagram")
 
-    html_code = f"""  <!-- ✅ f-string added -->
-    <style>
-        body {{
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-            text-align: center;
-            font-family: 'Arial', sans-serif;
-        }}
+    # ✅ Resolve image path safely
+    img_path = os.path.join(os.path.dirname(__file__), "CarDamage.jpg")
 
-        #carCanvas {{
-            width: 95vw !important;
-            height: auto !important;
-            max-width: 1000px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-            touch-action: none;
-        }}
+    # ✅ Double-check if file exists
+    if not os.path.exists(img_path):
+        st.error(f"Image not found: {img_path}")
+    else:
+        # ✅ Encode image to base64 for HTML embedding
+        with open(img_path, "rb") as f:
+            img_base64 = base64.b64encode(f.read()).decode()
 
-        #damageSelect {{
-            position: absolute;
-            display: none;
-            padding: 8px;
-            font-size: 14px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            background: white;
-            z-index: 999;
-        }}
+        html_code = f"""
+        <style>
+            body {{
+                margin: 0;
+                padding: 0;
+                overflow-x: hidden;
+                text-align: center;
+                font-family: 'Arial', sans-serif;
+            }}
 
-        #downloadBtn {{
-            margin-top: 15px;
-            padding: 12px 25px;
-            font-size: 16px;
-            font-weight: bold;
-            color: white;
-            background-color: #28a745;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }}
-
-        #downloadBtn:hover {{
-            background-color: #218838;
-        }}
-
-        .legend-container {{
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 25px;
-            padding: 10px;
-            width: 95%;
-        }}
-
-        .legend-item {{
-            display: flex;
-            align-items: center;
-            background: #111;
-            color: white;
-            border-radius: 8px;
-            padding: 6px 12px;
-            font-size: 14px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-        }}
-
-        .legend-color {{
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-            margin-right: 8px;
-            border: 1px solid #000;
-        }}
-
-        @media (max-width: 768px) {{
             #carCanvas {{
-                width: 100vw !important;
-                max-width: none;
+                width: 95vw !important;
+                height: auto !important;
+                max-width: 1000px;
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                touch-action: none;
             }}
+
+            #damageSelect {{
+                position: absolute;
+                display: none;
+                padding: 8px;
+                font-size: 14px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+                background: white;
+                z-index: 999;
+            }}
+
+            #downloadBtn {{
+                margin-top: 15px;
+                padding: 12px 25px;
+                font-size: 16px;
+                font-weight: bold;
+                color: white;
+                background-color: #28a745;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: background-color 0.3s;
+            }}
+
+            #downloadBtn:hover {{
+                background-color: #218838;
+            }}
+
+            .legend-container {{
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+                margin-top: 25px;
+                padding: 10px;
+                width: 95%;
+            }}
+
             .legend-item {{
-                font-size: 12px;
-                padding: 4px 8px;
+                display: flex;
+                align-items: center;
+                background: #111;
+                color: white;
+                border-radius: 8px;
+                padding: 6px 12px;
+                font-size: 14px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
             }}
-        }}
-    </style>
 
-    <div>
-        <h2 style="margin-bottom:10px;">Car Damage Diagram</h2>
-        <canvas id="carCanvas"></canvas>
+            .legend-color {{
+                width: 20px;
+                height: 20px;
+                border-radius: 4px;
+                margin-right: 8px;
+                border: 1px solid #000;
+            }}
 
-        <select id="damageSelect">
-            <option value="">--Select Damage--</option>
-            <option value="A1">A1 - Minor Scratch</option>
-            <option value="A2">A2 - Major or Multiple Scratches</option>
-            <option value="E1">E1 - Minor Dent</option>
-            <option value="E2">E2 - Major or Multiple Dents</option>
-            <option value="G1">G1 - Glass Scratches</option>
-            <option value="G4">G4 - Glass Chipped</option>
-            <option value="P">P - Paint Shower/Spray Only</option>
-            <option value="T">T - Total Genuine</option>
-            <option value="W1">W1 - Repaired with Dry Denting Only</option>
-            <option value="W2">W2 - Repaired with Poligated</option>
-            <option value="F1">F1 - Minor Fade</option>
-            <option value="F2">F2 - Major Fade</option>
-        </select>
+            @media (max-width: 768px) {{
+                #carCanvas {{
+                    width: 100vw !important;
+                    max-width: none;
+                }}
+                .legend-item {{
+                    font-size: 12px;
+                    padding: 4px 8px;
+                }}
+            }}
+        </style>
 
-        <br>
-        <button id="downloadBtn">Download Diagram</button>
-        <div class="legend-container" id="legend"></div>
-    </div>
+        <div>
+            <h2 style="margin-bottom:10px;">Car Damage Diagram</h2>
+            <canvas id="carCanvas"></canvas>
 
-    <script>
-    const canvas = document.getElementById('carCanvas');
-    const ctx = canvas.getContext('2d');
-    const damageSelect = document.getElementById('damageSelect');
-    const downloadBtn = document.getElementById('downloadBtn');
-    const legend = document.getElementById('legend');
-    let annotations = [];
+            <select id="damageSelect">
+                <option value="">--Select Damage--</option>
+                <option value="A1">A1 - Minor Scratch</option>
+                <option value="A2">A2 - Major or Multiple Scratches</option>
+                <option value="E1">E1 - Minor Dent</option>
+                <option value="E2">E2 - Major or Multiple Dents</option>
+                <option value="G1">G1 - Glass Scratches</option>
+                <option value="G4">G4 - Glass Chipped</option>
+                <option value="P">P - Paint Shower/Spray Only</option>
+                <option value="T">T - Total Genuine</option>
+                <option value="W1">W1 - Repaired with Dry Denting Only</option>
+                <option value="W2">W2 - Repaired with Poligated</option>
+                <option value="F1">F1 - Minor Fade</option>
+                <option value="F2">F2 - Major Fade</option>
+            </select>
 
-    const damages = {{
-        "A1": "Minor Scratch",
-        "A2": "Major or Multiple Scratches",
-        "E1": "Minor Dent",
-        "E2": "Major or Multiple Dents",
-        "G1": "Glass Scratches",
-        "G4": "Glass Chipped",
-        "P": "Paint Shower/Spray Only",
-        "T": "Total Genuine",
-        "W1": "Repaired with Dry Denting Only",
-        "W2": "Repaired with Poligated",
-        "F1": "Minor Fade",
-        "F2": "Major Fade"
-    }};
+            <br>
+            <button id="downloadBtn">Download Diagram</button>
+            <div class="legend-container" id="legend"></div>
+        </div>
 
-    const colors = {{
-        "A1": "#c77dff",
-        "A2": "#6a00f4",
-        "E1": "#ffb347",
-        "E2": "#ff6f00",
-        "G1": "#4dabf7",
-        "G4": "#1565c0",
-        "P": "#76ff03",
-        "T": "#ffff00",
-        "W1": "#ffea00",
-        "W2": "#ffc400",
-        "F1": "#bdbdbd",
-        "F2": "#616161"
-    }};
+        <script>
+        const canvas = document.getElementById('carCanvas');
+        const ctx = canvas.getContext('2d');
+        const damageSelect = document.getElementById('damageSelect');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const legend = document.getElementById('legend');
+        let annotations = [];
 
-    Object.keys(damages).forEach(code => {{
-        const item = document.createElement('div');
-        item.className = 'legend-item';
-        item.innerHTML = `<div class='legend-color' style='background:${{colors[code]}}'></div>
-                          <strong>${{code}}</strong> – ${{damages[code]}}`;
-        legend.appendChild(item);
-    }});
+        const damages = {{
+            "A1": "Minor Scratch",
+            "A2": "Major or Multiple Scratches",
+            "E1": "Minor Dent",
+            "E2": "Major or Multiple Dents",
+            "G1": "Glass Scratches",
+            "G4": "Glass Chipped",
+            "P": "Paint Shower/Spray Only",
+            "T": "Total Genuine",
+            "W1": "Repaired with Dry Denting Only",
+            "W2": "Repaired with Poligated",
+            "F1": "Minor Fade",
+            "F2": "Major Fade"
+        }};
 
-    const img = new Image();
-    img.src = "data:image/jpeg;base64,{img_base64}";  // ✅ Base64 inline image
-    img.onload = () => {{
-        const scale = Math.min(window.innerWidth * 0.9 / img.width, 1);
-        canvas.width = img.width * scale;
-        canvas.height = img.height * scale;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    }};
+        const colors = {{
+            "A1": "#c77dff",
+            "A2": "#6a00f4",
+            "E1": "#ffb347",
+            "E2": "#ff6f00",
+            "G1": "#4dabf7",
+            "G4": "#1565c0",
+            "P": "#76ff03",
+            "T": "#ffff00",
+            "W1": "#ffea00",
+            "W2": "#ffc400",
+            "F1": "#bdbdbd",
+            "F2": "#616161"
+        }};
 
-    function getCanvasCoordinates(e) {{
-        const rect = canvas.getBoundingClientRect();
-        let clientX, clientY;
-        if (e.touches) {{
-            clientX = e.touches[0].clientX;
-            clientY = e.touches[0].clientY;
-        }} else {{
-            clientX = e.clientX;
-            clientY = e.clientY;
-        }}
-        const x = (clientX - rect.left) * (canvas.width / rect.width);
-        const y = (clientY - rect.top) * (canvas.height / rect.height);
-        return {{x, y, clientX, clientY}};
-    }}
-
-    function getContrastYIQ(hexcolor) {{
-        hexcolor = hexcolor.replace("#", "");
-        const r = parseInt(hexcolor.substr(0,2),16);
-        const g = parseInt(hexcolor.substr(2,2),16);
-        const b = parseInt(hexcolor.substr(4,2),16);
-        const yiq = ((r*299)+(g*587)+(b*114))/1000;
-        return (yiq >= 128) ? 'black' : 'white';
-    }}
-
-    function showDropdown(x, y, clientX, clientY) {{
-        damageSelect.style.left = clientX + 'px';
-        damageSelect.style.top = clientY + 'px';
-        damageSelect.style.display = 'block';
-        damageSelect.dataset.x = x;
-        damageSelect.dataset.y = y;
-        damageSelect.focus();
-    }}
-
-    canvas.addEventListener('click', (e) => {{
-        const c = getCanvasCoordinates(e);
-        showDropdown(c.x, c.y, c.clientX, c.clientY);
-    }});
-
-    canvas.addEventListener('touchstart', (e) => {{
-        e.preventDefault();
-        const c = getCanvasCoordinates(e);
-        showDropdown(c.x, c.y, c.clientX, c.clientY);
-    }});
-
-    damageSelect.addEventListener('change', (e) => {{
-        const code = e.target.value;
-        if(!code) return;
-        annotations.push({{code, x:e.target.dataset.x, y:e.target.dataset.y}});
-        redraw();
-        damageSelect.style.display = 'none';
-        damageSelect.value = '';
-    }});
-
-    function redraw() {{
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        annotations.forEach(a => {{
-            const padding = 6;
-            ctx.font = 'bold 14px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            const textWidth = ctx.measureText(a.code).width;
-            const rectWidth = textWidth + padding*2;
-            const rectHeight = 20;
-            const bx = a.x - rectWidth/2;
-            const by = a.y - rectHeight/2;
-            const bg = colors[a.code] || "#ff6666";
-            ctx.fillStyle = bg;
-            ctx.fillRect(bx, by, rectWidth, rectHeight);
-            ctx.strokeStyle = "black";
-            ctx.strokeRect(bx, by, rectWidth, rectHeight);
-            ctx.fillStyle = getContrastYIQ(bg);
-            ctx.fillText(a.code, a.x, a.y);
+        Object.keys(damages).forEach(code => {{
+            const item = document.createElement('div');
+            item.className = 'legend-item';
+            item.innerHTML = `<div class='legend-color' style='background:${{colors[code]}}'></div>
+                            <strong>${{code}}</strong> – ${{damages[code]}}`;
+            legend.appendChild(item);
         }});
-    }}
 
-    downloadBtn.addEventListener('click', () => {{
-        const link = document.createElement('a');
-        link.download = 'car_damage.png';
-        link.href = canvas.toDataURL();
-        link.click();
-    }});
-    </script>
-    """
+        const img = new Image();
+        img.src = "data:image/jpeg;base64,{img_base64}";  // ✅ Base64 inline image
+        img.onload = () => {{
+            const scale = Math.min(window.innerWidth * 0.9 / img.width, 1);
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        }};
 
-    components.html(html_code, height=1600, scrolling=True)
+        function getCanvasCoordinates(e) {{
+            const rect = canvas.getBoundingClientRect();
+            let clientX, clientY;
+            if (e.touches) {{
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            }} else {{
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }}
+            const x = (clientX - rect.left) * (canvas.width / rect.width);
+            const y = (clientY - rect.top) * (canvas.height / rect.height);
+            return {{x, y, clientX, clientY}};
+        }}
+
+        function getContrastYIQ(hexcolor) {{
+            hexcolor = hexcolor.replace("#", "");
+            const r = parseInt(hexcolor.substr(0,2),16);
+            const g = parseInt(hexcolor.substr(2,2),16);
+            const b = parseInt(hexcolor.substr(4,2),16);
+            const yiq = ((r*299)+(g*587)+(b*114))/1000;
+            return (yiq >= 128) ? 'black' : 'white';
+        }}
+
+        function showDropdown(x, y, clientX, clientY) {{
+            damageSelect.style.left = clientX + 'px';
+            damageSelect.style.top = clientY + 'px';
+            damageSelect.style.display = 'block';
+            damageSelect.dataset.x = x;
+            damageSelect.dataset.y = y;
+            damageSelect.focus();
+        }}
+
+        canvas.addEventListener('click', (e) => {{
+            const c = getCanvasCoordinates(e);
+            showDropdown(c.x, c.y, c.clientX, c.clientY);
+        }});
+
+        canvas.addEventListener('touchstart', (e) => {{
+            e.preventDefault();
+            const c = getCanvasCoordinates(e);
+            showDropdown(c.x, c.y, c.clientX, c.clientY);
+        }});
+
+        damageSelect.addEventListener('change', (e) => {{
+            const code = e.target.value;
+            if(!code) return;
+            annotations.push({{code, x:e.target.dataset.x, y:e.target.dataset.y}});
+            redraw();
+            damageSelect.style.display = 'none';
+            damageSelect.value = '';
+        }});
+
+        function redraw() {{
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            annotations.forEach(a => {{
+                const padding = 6;
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const textWidth = ctx.measureText(a.code).width;
+                const rectWidth = textWidth + padding*2;
+                const rectHeight = 20;
+                const bx = a.x - rectWidth/2;
+                const by = a.y - rectHeight/2;
+                const bg = colors[a.code] || "#ff6666";
+                ctx.fillStyle = bg;
+                ctx.fillRect(bx, by, rectWidth, rectHeight);
+                ctx.strokeStyle = "black";
+                ctx.strokeRect(bx, by, rectWidth, rectHeight);
+                ctx.fillStyle = getContrastYIQ(bg);
+                ctx.fillText(a.code, a.x, a.y);
+            }});
+        }}
+
+        downloadBtn.addEventListener('click', () => {{
+            const link = document.createElement('a');
+            link.download = 'car_damage.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }});
+        </script>
+        """
+
+        components.html(html_code, height=1600, scrolling=True)
+
 
 
 

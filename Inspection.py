@@ -72,7 +72,7 @@ with tab2:
     st.title("Car Damage Diagram")    
     
     with open("CarDamage.jpg", "rb") as f:
-        img_base64 = base64.b64encode(f.read()).decode())
+        img_base64 = base64.b64encode(f.read()).decode()
 
     html_code = """
     <style>

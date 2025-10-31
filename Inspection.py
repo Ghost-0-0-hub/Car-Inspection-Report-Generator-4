@@ -69,9 +69,10 @@ os.makedirs(REPORTS_DIR, exist_ok=True)
 tab1, tab2 = st.tabs(["Inspection Form", "Damage Diagram"])
 
 with tab2:
-    st.title("Car Damage Diagram")
-
-    import streamlit.components.v1 as components
+    st.title("Car Damage Diagram")]    
+    
+    with open("CarDamage.jpg", "rb") as f:
+        img_base64 = base64.b64encode(f.read()).decode()
 
     html_code = """
     <style>

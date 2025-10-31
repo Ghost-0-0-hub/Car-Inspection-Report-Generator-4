@@ -942,7 +942,7 @@ with tab1:
             documents=documents,
             interior=interior,
             car_body=car_body,
-            car_body_panels=car_body['panels'],
+            car_body_panels=car_body_panels,
             mechanical=mechanical,
             suspension=suspension,
             suspension_parts={

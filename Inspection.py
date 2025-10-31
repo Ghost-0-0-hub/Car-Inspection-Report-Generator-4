@@ -76,14 +76,41 @@ with tab2:
 
         html_code = f"""
         <style>
+            /* Responsive layout */
+            @media (max-width: 768px) {{
+                h2 {{
+                    font-size: 18px;
+                }}
+                #downloadBtn {{
+                    font-size: 14px !important;
+                    padding: 10px 20px !important;
+                }}
+                .legend-item {{
+                    font-size: 12px !important;
+                    padding: 5px 8px !important;
+                }}
+                .legend-color {{
+                    width: 16px !important;
+                    height: 16px !important;
+                }}
+            }}
+            
+            canvas {{
+                width: 95vw !important;
+                height: auto !important;
+                max-width: 1000px;
+            }}
+
             .legend-container {{
                 display: flex;
                 flex-wrap: wrap;
                 justify-content: center;
                 gap: 10px;
                 margin-top: 20px;
-                max-width: 90%;
+                padding: 10px;
+                width: 95%;
             }}
+
             .legend-item {{
                 display: flex;
                 align-items: center;
@@ -94,6 +121,7 @@ with tab2:
                 font-size: 14px;
                 box-shadow: 0 2px 6px rgba(0,0,0,0.3);
             }}
+
             .legend-color {{
                 width: 20px;
                 height: 20px;
@@ -105,7 +133,7 @@ with tab2:
 
         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
             <h2 style="text-align:center; margin-bottom:10px;">Car Damage Diagram</h2>
-            <canvas id="carCanvas" style="border:1px solid #ccc; max-width:95%; height:auto;"></canvas>
+            <canvas id="carCanvas" style="border:1px solid #ccc;"></canvas>
 
             <select id="damageSelect" style="position:absolute; display:none; padding:5px;">
               <option value="">--Select Damage--</option>
@@ -190,8 +218,8 @@ with tab2:
         const img = new Image();
         img.src = "data:image/jpeg;base64,{img_base64}";
         img.onload = () => {{
-            const maxWidth = 900;  // increased canvas width
-            const scale = Math.min(maxWidth / img.naturalWidth, 1);
+            const containerWidth = window.innerWidth * 0.95; // almost full width
+            const scale = Math.min(containerWidth / img.naturalWidth, 1);
             canvas.width = img.naturalWidth * scale;
             canvas.height = img.naturalHeight * scale;
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -278,11 +306,7 @@ with tab2:
         </script>
         """
 
-        components.html(html_code, height=900)
-
-
-
-
+        components.html(html_code, height=1100)
     # ================================
 # --- INSPECTION FORM TAB ---
 # ================================

@@ -68,31 +68,61 @@ os.makedirs(REPORTS_DIR, exist_ok=True)
 # ================================
 tab1, tab2 = st.tabs(["Inspection Form", "Damage Diagram"])
 
-# ================================
-# --- DAMAGE DIAGRAM TAB ---
-# ================================
 with tab2:
     st.title("Car Damage Diagram")
     with open("CarDamage.jpg", "rb") as f:
         img_bytes = f.read()
         img_base64 = base64.b64encode(img_bytes).decode()
-    
+
         html_code = f"""
+        <style>
+            .legend-container {{
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+                margin-top: 20px;
+                max-width: 90%;
+            }}
+            .legend-item {{
+                display: flex;
+                align-items: center;
+                background: #1e1e1e;
+                color: white;
+                border-radius: 8px;
+                padding: 6px 12px;
+                font-size: 14px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            }}
+            .legend-color {{
+                width: 20px;
+                height: 20px;
+                border-radius: 4px;
+                margin-right: 8px;
+                border: 1px solid #000;
+            }}
+        </style>
+
         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
             <h2 style="text-align:center; margin-bottom:10px;">Car Damage Diagram</h2>
-            <canvas id="carCanvas" style="border:1px solid #ccc; max-width:90%; height:auto;"></canvas>
+            <canvas id="carCanvas" style="border:1px solid #ccc; max-width:95%; height:auto;"></canvas>
+
             <select id="damageSelect" style="position:absolute; display:none; padding:5px;">
               <option value="">--Select Damage--</option>
               <option value="A1">A1 - Minor Scratch</option>
-              <option value="A2">A2 - Major/Multiple Scratches</option>
+              <option value="A2">A2 - Major or Multiple Scratches</option>
               <option value="E1">E1 - Minor Dent</option>
-              <option value="E2">E2 - Major/Multiple Dents</option>
-              <option value="P">P - Paint Spray ONLY</option>
-              <option value="T">T - TOTAL Genuine</option>
+              <option value="E2">E2 - Major or Multiple Dents</option>
               <option value="G1">G1 - Glass Scratches</option>
               <option value="G4">G4 - Glass Chipped</option>
-              <option value="S">S - Repaired / Dry Denting</option>
+              <option value="P">P - Paint Shower/Spray Only</option>
+              <option value="T">T - Total Genuine</option>
+              <option value="W1">W1 - Repaired with Dry Denting Only</option>
+              <option value="W2">W2 - Repaired with Poligated</option>
+              <option value="F1">F1 - Minor Fade</option>
+              <option value="F2">F2 - Major Fade</option>
             </select>
+
             <button id="downloadBtn" style="
                 margin-top:15px;
                 padding: 12px 25px;
@@ -105,35 +135,68 @@ with tab2:
                 cursor: pointer;
                 transition: background-color 0.3s;
             ">Download Diagram</button>
+
+            <!-- LEGEND -->
+            <div class="legend-container" id="legend"></div>
         </div>
-    
+
         <script>
         const canvas = document.getElementById('carCanvas');
         const ctx = canvas.getContext('2d');
         const damageSelect = document.getElementById('damageSelect');
         const downloadBtn = document.getElementById('downloadBtn');
+        const legend = document.getElementById('legend');
         let annotations = [];
-    
-        const colors = {{
-            "A1": "#D8BFD8",
-            "A2": "#800080",
-            "E1": "#FFA07A",
-            "E2": "#FF8C00",
-            "G1": "#1E90FF",
-            "S": "#FFD700",
-            "T": "#FFFF00"
+
+        const damages = {{
+            "A1": "Minor Scratch",
+            "A2": "Major or Multiple Scratches",
+            "E1": "Minor Dent",
+            "E2": "Major or Multiple Dents",
+            "G1": "Glass Scratches",
+            "G4": "Glass Chipped",
+            "P": "Paint Shower/Spray Only",
+            "T": "Total Genuine",
+            "W1": "Repaired with Dry Denting Only",
+            "W2": "Repaired with Poligated",
+            "F1": "Minor Fade",
+            "F2": "Major Fade"
         }};
-    
+
+        const colors = {{
+            "A1": "#c77dff",
+            "A2": "#6a00f4",
+            "E1": "#ffb347",
+            "E2": "#ff6f00",
+            "G1": "#4dabf7",
+            "G4": "#1565c0",
+            "P": "#76ff03",
+            "T": "#ffff00",
+            "W1": "#ffea00",
+            "W2": "#ffc400",
+            "F1": "#bdbdbd",
+            "F2": "#616161"
+        }};
+
+        // Build legend dynamically
+        Object.keys(damages).forEach(code => {{
+            const item = document.createElement('div');
+            item.className = 'legend-item';
+            item.innerHTML = `<div class='legend-color' style='background:${{colors[code]}}'></div>
+                              <strong>${{code}}</strong> – ${{damages[code]}}`;
+            legend.appendChild(item);
+        }});
+
         const img = new Image();
         img.src = "data:image/jpeg;base64,{img_base64}";
         img.onload = () => {{
-            const maxWidth = 600;  
+            const maxWidth = 900;  // increased canvas width
             const scale = Math.min(maxWidth / img.naturalWidth, 1);
             canvas.width = img.naturalWidth * scale;
             canvas.height = img.naturalHeight * scale;
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         }};
-    
+
         function getCanvasCoordinates(e) {{
             const rect = canvas.getBoundingClientRect();
             let clientX, clientY;
@@ -144,13 +207,11 @@ with tab2:
                 clientX = e.clientX;
                 clientY = e.clientY;
             }}
-            // Compute coordinates relative to canvas
             const x = (clientX - rect.left) * (canvas.width / rect.width);
             const y = (clientY - rect.top) * (canvas.height / rect.height);
             return {{x, y}};
         }}
 
-    
         function showDropdown(x, y, clientX, clientY) {{
             damageSelect.style.left = clientX + 'px';
             damageSelect.style.top = clientY + 'px';
@@ -159,18 +220,27 @@ with tab2:
             damageSelect.dataset.y = y;
             damageSelect.focus();
         }}
-    
+
+        function getContrastYIQ(hexcolor) {{
+            hexcolor = hexcolor.replace("#", "");
+            const r = parseInt(hexcolor.substr(0,2),16);
+            const g = parseInt(hexcolor.substr(2,2),16);
+            const b = parseInt(hexcolor.substr(4,2),16);
+            const yiq = ((r*299)+(g*587)+(b*114))/1000;
+            return (yiq >= 128) ? 'black' : 'white';
+        }}
+
         canvas.addEventListener('click', (e) => {{
             const coords = getCanvasCoordinates(e);
             showDropdown(coords.x, coords.y, e.clientX, e.clientY);
         }});
-    
+
         canvas.addEventListener('touchstart', (e) => {{
-            e.preventDefault();  // prevent scrolling
+            e.preventDefault();
             const coords = getCanvasCoordinates(e);
             showDropdown(coords.x, coords.y, e.touches[0].clientX, e.touches[0].clientY);
         }});
-    
+
         damageSelect.addEventListener('change', (e) => {{
             const code = e.target.value;
             if(!code) return;
@@ -187,17 +257,18 @@ with tab2:
                 const rectHeight = 20;
                 const bx = a.x - rectWidth/2;
                 const by = a.y - rectHeight/2;
-                ctx.fillStyle = colors[a.code] || "#ff6666";
+                const bg = colors[a.code] || "#ff6666";
+                ctx.fillStyle = bg;
                 ctx.fillRect(bx, by, rectWidth, rectHeight);
                 ctx.strokeStyle = "black";
                 ctx.strokeRect(bx, by, rectWidth, rectHeight);
-                ctx.fillStyle = "white";
+                ctx.fillStyle = getContrastYIQ(bg);
                 ctx.fillText(a.code, a.x, a.y);
             }});
             damageSelect.style.display='none';
             damageSelect.value='';
         }});
-    
+
         downloadBtn.addEventListener('click', () => {{
             const link = document.createElement('a');
             link.download = 'car_damage.png';
@@ -206,8 +277,9 @@ with tab2:
         }});
         </script>
         """
-    
-        components.html(html_code, height=700)
+
+        components.html(html_code, height=900)
+
 
 
 

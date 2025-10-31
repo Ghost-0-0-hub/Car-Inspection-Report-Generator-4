@@ -335,7 +335,7 @@ with tab2:
     </script>
     """
 
-    components.html(html_code, height=1400, scrolling=True)
+    components.html(html_code, height=900)
 
 
 

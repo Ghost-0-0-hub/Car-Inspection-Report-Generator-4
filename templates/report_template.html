@@ -13,7 +13,7 @@
         color: #333;
         margin: 0;
         padding: 20px;
-        font-size: 1.05em; /* slightly larger for phone readability */
+        font-size: 1.05em;
     }
 
     h1, h2, h3 {
@@ -21,7 +21,6 @@
         margin-bottom: 5px;
     }
 
-    /* --- Overall Condition Section --- */
     .overall-condition {
         margin: 20px auto;
         padding: 15px;
@@ -33,9 +32,7 @@
         transition: all 0.3s ease;
     }
 
-    .overall-condition:hover {
-        transform: scale(1.02);
-    }
+    .overall-condition:hover { transform: scale(1.02); }
 
     .overall-condition h3 {
         color: #2e7d32;
@@ -65,7 +62,6 @@
         color: #333;
     }
 
-    /* --- Header --- */
     .report-header {
         display: flex;
         flex-wrap: wrap;
@@ -79,11 +75,6 @@
         text-align: center;
     }
 
-    .logo {
-        flex: 0 0 auto;
-        margin-right: 15px;
-    }
-
     .logo img {
         height: 70px;
         border-radius: 10px;
@@ -91,14 +82,7 @@
         transition: transform 0.3s ease;
     }
 
-    .logo img:hover {
-        transform: scale(1.05);
-    }
-
-    .report-header-text {
-        flex: 1;
-        min-width: 250px;
-    }
+    .logo img:hover { transform: scale(1.05); }
 
     .accordion {
         background-color: #ffffff;
@@ -120,9 +104,7 @@
         padding-right: 35px;
     }
 
-    .accordion-header:hover {
-        background-color: #e1f4f1;
-    }
+    .accordion-header:hover { background-color: #e1f4f1; }
 
     .accordion-header::after {
         content: "▶";
@@ -185,7 +167,6 @@
         word-wrap: break-word;
     }
 
-    /* Responsive Styles */
     @media screen and (max-width: 768px) {
         body { padding: 10px; font-size: 1.05em; }
         .report-header { padding: 15px; flex-direction: column; text-align: center; }
@@ -206,24 +187,13 @@
 
 <body>
 
-<!-- Header with Company Logo -->
-<div class="report-header" style="
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    background-color: #eaf3f8;
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
-">
+<!-- Header -->
+<div class="report-header">
     <div class="logo-section" style="flex: 1; min-width: 150px; text-align: left;">
         <img src="https://raw.githubusercontent.com/Ghost-0-0-hub/inspection-assets/main/CompanyLogo.jpg?raw=true"
              alt="Company Logo"
-     style="max-height:70px; border-radius:8px; object-fit:contain;">
+             style="max-height:70px; border-radius:8px; object-fit:contain;">
     </div>
-
     <div class="title-section" style="flex: 2; min-width: 250px; text-align: right;">
         <h1 style="margin: 0; color: #1b4f72;">Vehicle Inspection Report</h1>
         <p style="margin: 5px 0 0 0;">
@@ -233,7 +203,8 @@
         </p>
     </div>
 </div>
-<!-- Overall Vehicle Condition -->
+
+<!-- Overall Condition -->
 <div class="overall-condition">
     <h3>Overall Vehicle Condition</h3>
     <div class="condition-bar">
@@ -251,7 +222,7 @@
 </div>
 {% endif %}
 
-<!-- Accordion Template -->
+<!-- Accordion Macro -->
 {% macro accordion(title, content, percent) %}
 <div class="accordion">
     <div class="accordion-header">
@@ -320,18 +291,32 @@
 {% endset %}
 {{ accordion('Interior', interior_content, completion.interior) }}
 
-<!-- Car Body Evaluation -->
+<!-- ✅ Updated Car Body Evaluation -->
 {% set car_body_content %}
 <table>
 <tr><th>Panel</th><th>Condition</th></tr>
 {% for panel, condition in car_body_panels.items() %}
-<tr><td class="field-label">{{ panel }}</td><td>{{ condition }}</td></tr>
+<tr>
+    <td class="field-label">{{ panel }}</td>
+    <td>{{ condition }}</td>
+</tr>
+{% set comment_key = panel|lower|replace(' ', '_') ~ '_comment' %}
+{% if car_body_comments[comment_key] %}
+<tr>
+    <td colspan="2">
+        <div class="comments">
+            <strong>Comment:</strong> {{ car_body_comments[comment_key] }}
+        </div>
+    </td>
+</tr>
+{% endif %}
 {% endfor %}
 </table>
+
 <div class="comments">
 <strong>Overall Exterior:</strong> {{ car_body.overall_exterior_condition }}<br>
 <strong>Overall Interior:</strong> {{ car_body.overall_interior_condition }}<br>
-<strong>Comments:</strong> {{ car_body.comments }}
+<strong>General Comments:</strong> {{ car_body.comments }}
 </div>
 {% endset %}
 {{ accordion('Car Body Evaluation', car_body_content, completion.car_body) }}
@@ -432,36 +417,24 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-
-    // Function to toggle an accordion
     function toggleAccordion(header) {
         header.parentElement.classList.toggle("active");
     }
-
-    // Add event listeners for all accordion headers
     document.querySelectorAll(".accordion-header").forEach(header => {
-        // For desktop clicks
         header.addEventListener("click", () => toggleAccordion(header));
-
-        // For mobile touch taps
         header.addEventListener("touchend", (e) => {
-            e.preventDefault(); // Prevent double firing
+            e.preventDefault();
             toggleAccordion(header);
         }, { passive: false });
     });
 
-    // Animate the overall condition bar
     const fill = document.querySelector(".condition-fill");
     if (fill) {
         fill.style.width = "0%";
-        setTimeout(() => {
-            fill.style.width = "{{ overall_condition }}%";
-        }, 300);
+        setTimeout(() => { fill.style.width = "{{ overall_condition }}%"; }, 300);
     }
-
 });
 </script>
-
 
 </body>
 </html>

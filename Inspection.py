@@ -310,32 +310,81 @@ with tab1:
         )
 
         front_bumper = st.selectbox("Front Bumper Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_front_bumper")
+        st.text_area("Front Bumper Comments", key="body_front_bumper_comment")
+
         bonnet = st.selectbox("Bonnet Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_bonnet")
+        st.text_area("Bonnet Comments", key="body_bonnet_comment")
+
         front_windscreen = st.selectbox("Front Windscreen Condition", ["Good", "Cracked", "Replaced"], key="body_front_windscreen")
+        st.text_area("Front Windscreen Comments", key="body_front_windscreen_comment")
+
         front_left_fender = st.selectbox("Front Left Fender Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_front_left_fender")
+        st.text_area("Front Left Fender Comments", key="body_front_left_fender_comment")
+
         left_a_pillar = st.selectbox("Left A-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_left_a_pillar")
+        st.text_area("Left A-Pillar Comments", key="body_left_a_pillar_comment")
+
         front_left_door = st.selectbox("Front Left Door Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_front_left_door")
+        st.text_area("Front Left Door Comments", key="body_front_left_door_comment")
+
         roof = st.selectbox("Roof Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_roof")
+        st.text_area("Roof Comments", key="body_roof_comment")
+
         left_b_pillar = st.selectbox("Left B-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_left_b_pillar")
+        st.text_area("Left B-Pillar Comments", key="body_left_b_pillar_comment")
+
         back_left_door = st.selectbox("Back Left Door Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_back_left_door")
+        st.text_area("Back Left Door Comments", key="body_back_left_door_comment")
+
         left_c_pillar = st.selectbox("Left C-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_left_c_pillar")
+        st.text_area("Left C-Pillar Comments", key="body_left_c_pillar_comment")
+
         left_d_pillar = st.selectbox("Left D-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_left_d_pillar")
+        st.text_area("Left D-Pillar Comments", key="body_left_d_pillar_comment")
+
         back_left_quarter_panel = st.selectbox("Back Left Quarter Panel Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_back_left_quarter")
+        st.text_area("Back Left Quarter Panel Comments", key="body_back_left_quarter_comment")
+
         rear_bumper = st.selectbox("Rear Bumper Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_rear_bumper")
+        st.text_area("Rear Bumper Comments", key="body_rear_bumper_comment")
+
         trunk_lid = st.selectbox("Trunk Lid Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_trunk_lid")
+        st.text_area("Trunk Lid Comments", key="body_trunk_lid_comment")
+
         back_right_quarter_panel = st.selectbox("Back Right Quarter Panel Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_back_right_quarter")
+        st.text_area("Back Right Quarter Panel Comments", key="body_back_right_quarter_comment")
+
         rear_windscreen = st.selectbox("Rear Windscreen Condition", ["Good", "Cracked", "Replaced"], key="body_rear_windscreen")
+        st.text_area("Rear Windscreen Comments", key="body_rear_windscreen_comment")
+
         right_d_pillar = st.selectbox("Right D-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_right_d_pillar")
+        st.text_area("Right D-Pillar Comments", key="body_right_d_pillar_comment")
+
         right_c_pillar = st.selectbox("Right C-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_right_c_pillar")
+        st.text_area("Right C-Pillar Comments", key="body_right_c_pillar_comment")
+
         back_right_door = st.selectbox("Back Right Door Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_back_right_door")
+        st.text_area("Back Right Door Comments", key="body_back_right_door_comment")
+
         right_b_pillar = st.selectbox("Right B-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_right_b_pillar")
+        st.text_area("Right B-Pillar Comments", key="body_right_b_pillar_comment")
+
         front_right_door = st.selectbox("Front Right Door Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_front_right_door")
+        st.text_area("Front Right Door Comments", key="body_front_right_door_comment")
+
         right_a_pillar = st.selectbox("Right A-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_right_a_pillar")
+        st.text_area("Right A-Pillar Comments", key="body_right_a_pillar_comment")
+
         front_right_fender = st.selectbox("Front Right Fender Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_front_right_fender")
+        st.text_area("Front Right Fender Comments", key="body_front_right_fender_comment")
 
         exterior_condition = st.selectbox("Overall Exterior Condition", ["Excellent", "Good", "Average", "Poor"], key="body_exterior_condition")
+        st.text_area("Overall Exterior Comments", key="body_exterior_comment")
+
         interior_condition = st.selectbox("Overall Interior Condition", ["Excellent", "Good", "Average", "Poor"], key="body_interior_condition")
-        car_body_comments = st.text_area("Car Body Comments / Observations", key="body_comments")
+        st.text_area("Overall Interior Comments", key="body_interior_comment")
+
+        car_body_comments = st.text_area("General Car Body Comments / Observations", key="body_comments")
 
 
         # --- Mechanical ---

@@ -71,20 +71,21 @@ tab1, tab2 = st.tabs(["Inspection Form", "Damage Diagram"])
 with tab2:
     st.title("Car Damage Diagram")    
     
+    # ✅ Read image and convert to base64
     with open("CarDamage.jpg", "rb") as f:
         img_base64 = base64.b64encode(f.read()).decode()
 
-    html_code = """
+    html_code = f"""  <!-- ✅ f-string added -->
     <style>
-        body {
+        body {{
             margin: 0;
             padding: 0;
             overflow-x: hidden;
             text-align: center;
             font-family: 'Arial', sans-serif;
-        }
+        }}
 
-        #carCanvas {
+        #carCanvas {{
             width: 95vw !important;
             height: auto !important;
             max-width: 1000px;
@@ -92,9 +93,9 @@ with tab2:
             border-radius: 8px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
             touch-action: none;
-        }
+        }}
 
-        #damageSelect {
+        #damageSelect {{
             position: absolute;
             display: none;
             padding: 8px;
@@ -103,9 +104,9 @@ with tab2:
             border: 1px solid #ccc;
             background: white;
             z-index: 999;
-        }
+        }}
 
-        #downloadBtn {
+        #downloadBtn {{
             margin-top: 15px;
             padding: 12px 25px;
             font-size: 16px;
@@ -116,13 +117,13 @@ with tab2:
             border-radius: 8px;
             cursor: pointer;
             transition: background-color 0.3s;
-        }
+        }}
 
-        #downloadBtn:hover {
+        #downloadBtn:hover {{
             background-color: #218838;
-        }
+        }}
 
-        .legend-container {
+        .legend-container {{
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
@@ -130,9 +131,9 @@ with tab2:
             margin-top: 25px;
             padding: 10px;
             width: 95%;
-        }
+        }}
 
-        .legend-item {
+        .legend-item {{
             display: flex;
             align-items: center;
             background: #111;
@@ -141,26 +142,26 @@ with tab2:
             padding: 6px 12px;
             font-size: 14px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-        }
+        }}
 
-        .legend-color {
+        .legend-color {{
             width: 20px;
             height: 20px;
             border-radius: 4px;
             margin-right: 8px;
             border: 1px solid #000;
-        }
+        }}
 
-        @media (max-width: 768px) {
-            #carCanvas {
+        @media (max-width: 768px) {{
+            #carCanvas {{
                 width: 100vw !important;
                 max-width: none;
-            }
-            .legend-item {
+            }}
+            .legend-item {{
                 font-size: 12px;
                 padding: 4px 8px;
-            }
-        }
+            }}
+        }}
     </style>
 
     <div>
@@ -196,7 +197,7 @@ with tab2:
     const legend = document.getElementById('legend');
     let annotations = [];
 
-    const damages = {
+    const damages = {{
         "A1": "Minor Scratch",
         "A2": "Major or Multiple Scratches",
         "E1": "Minor Dent",
@@ -209,9 +210,9 @@ with tab2:
         "W2": "Repaired with Poligated",
         "F1": "Minor Fade",
         "F2": "Major Fade"
-    };
+    }};
 
-    const colors = {
+    const colors = {{
         "A1": "#c77dff",
         "A2": "#6a00f4",
         "E1": "#ffb347",
@@ -224,82 +225,82 @@ with tab2:
         "W2": "#ffc400",
         "F1": "#bdbdbd",
         "F2": "#616161"
-    };
+    }};
 
-    Object.keys(damages).forEach(code => {
+    Object.keys(damages).forEach(code => {{
         const item = document.createElement('div');
         item.className = 'legend-item';
-        item.innerHTML = `<div class='legend-color' style='background:${colors[code]}'></div>
-                          <strong>${code}</strong> – ${damages[code]}`;
+        item.innerHTML = `<div class='legend-color' style='background:${{colors[code]}}'></div>
+                          <strong>${{code}}</strong> – ${{damages[code]}}`;
         legend.appendChild(item);
-    });
+    }});
 
     const img = new Image();
-    img.src = "/CarDamage.jpg";  // <- make sure CarDamage.jpg is in the same folder as app.py
-    img.onload = () => {
+    img.src = "data:image/jpeg;base64,{img_base64}";  // ✅ Base64 inline image
+    img.onload = () => {{
         const scale = Math.min(window.innerWidth * 0.9 / img.width, 1);
         canvas.width = img.width * scale;
         canvas.height = img.height * scale;
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    };
+    }};
 
-    function getCanvasCoordinates(e) {
+    function getCanvasCoordinates(e) {{
         const rect = canvas.getBoundingClientRect();
         let clientX, clientY;
-        if (e.touches) {
+        if (e.touches) {{
             clientX = e.touches[0].clientX;
             clientY = e.touches[0].clientY;
-        } else {
+        }} else {{
             clientX = e.clientX;
             clientY = e.clientY;
-        }
+        }}
         const x = (clientX - rect.left) * (canvas.width / rect.width);
         const y = (clientY - rect.top) * (canvas.height / rect.height);
-        return {x, y, clientX, clientY};
-    }
+        return {{x, y, clientX, clientY}};
+    }}
 
-    function getContrastYIQ(hexcolor) {
+    function getContrastYIQ(hexcolor) {{
         hexcolor = hexcolor.replace("#", "");
         const r = parseInt(hexcolor.substr(0,2),16);
         const g = parseInt(hexcolor.substr(2,2),16);
         const b = parseInt(hexcolor.substr(4,2),16);
         const yiq = ((r*299)+(g*587)+(b*114))/1000;
         return (yiq >= 128) ? 'black' : 'white';
-    }
+    }}
 
-    function showDropdown(x, y, clientX, clientY) {
+    function showDropdown(x, y, clientX, clientY) {{
         damageSelect.style.left = clientX + 'px';
         damageSelect.style.top = clientY + 'px';
         damageSelect.style.display = 'block';
         damageSelect.dataset.x = x;
         damageSelect.dataset.y = y;
         damageSelect.focus();
-    }
+    }}
 
-    canvas.addEventListener('click', (e) => {
+    canvas.addEventListener('click', (e) => {{
         const c = getCanvasCoordinates(e);
         showDropdown(c.x, c.y, c.clientX, c.clientY);
-    });
+    }});
 
-    canvas.addEventListener('touchstart', (e) => {
+    canvas.addEventListener('touchstart', (e) => {{
         e.preventDefault();
         const c = getCanvasCoordinates(e);
         showDropdown(c.x, c.y, c.clientX, c.clientY);
-    });
+    }});
 
-    damageSelect.addEventListener('change', (e) => {
+    damageSelect.addEventListener('change', (e) => {{
         const code = e.target.value;
         if(!code) return;
-        annotations.push({code, x:e.target.dataset.x, y:e.target.dataset.y});
+        annotations.push({{code, x:e.target.dataset.x, y:e.target.dataset.y}});
         redraw();
         damageSelect.style.display = 'none';
         damageSelect.value = '';
-    });
+    }});
 
-    function redraw() {
+    function redraw() {{
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        annotations.forEach(a => {
+        annotations.forEach(a => {{
             const padding = 6;
             ctx.font = 'bold 14px Arial';
             ctx.textAlign = 'center';
@@ -316,15 +317,15 @@ with tab2:
             ctx.strokeRect(bx, by, rectWidth, rectHeight);
             ctx.fillStyle = getContrastYIQ(bg);
             ctx.fillText(a.code, a.x, a.y);
-        });
-    }
+        }});
+    }}
 
-    downloadBtn.addEventListener('click', () => {
+    downloadBtn.addEventListener('click', () => {{
         const link = document.createElement('a');
         link.download = 'car_damage.png';
         link.href = canvas.toDataURL();
         link.click();
-    });
+    }});
     </script>
     """
 

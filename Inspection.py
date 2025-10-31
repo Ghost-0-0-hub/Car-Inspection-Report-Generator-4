@@ -69,7 +69,7 @@ os.makedirs(REPORTS_DIR, exist_ok=True)
 tab1, tab2 = st.tabs(["Inspection Form", "Damage Diagram"])
 
 with tab2:
-    st.title("Car Damage Diagram")]    
+    st.title("Car Damage Diagram")    
     
     with open("CarDamage.jpg", "rb") as f:
         img_base64 = base64.b64encode(f.read()).decode())

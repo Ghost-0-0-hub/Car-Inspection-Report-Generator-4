@@ -556,36 +556,69 @@ with tab1:
         }
     
         # --- 5. Car Body Evaluation ---
+# ===============================
+# --- Collect Car Body Data ---
+# ===============================
+
+# 1️⃣  Create a dictionary for all panel conditions
+        car_body_panels = {
+            "Front Bumper": st.session_state.body_front_bumper,
+            "Bonnet": st.session_state.body_bonnet,
+            "Front Windscreen": st.session_state.body_front_windscreen,
+            "Front Left Fender": st.session_state.body_front_left_fender,
+            "Left A-Pillar": st.session_state.body_left_a_pillar,
+            "Front Left Door": st.session_state.body_front_left_door,
+            "Roof": st.session_state.body_roof,
+            "Left B-Pillar": st.session_state.body_left_b_pillar,
+            "Back Left Door": st.session_state.body_back_left_door,
+            "Left C-Pillar": st.session_state.body_left_c_pillar,
+            "Left D-Pillar": st.session_state.body_left_d_pillar,
+            "Back Left Quarter Panel": st.session_state.body_back_left_quarter,
+            "Rear Bumper": st.session_state.body_rear_bumper,
+            "Trunk Lid": st.session_state.body_trunk_lid,
+            "Back Right Quarter Panel": st.session_state.body_back_right_quarter,
+            "Rear Windscreen": st.session_state.body_rear_windscreen,
+            "Right D-Pillar": st.session_state.body_right_d_pillar,
+            "Right C-Pillar": st.session_state.body_right_c_pillar,
+            "Back Right Door": st.session_state.body_back_right_door,
+            "Right B-Pillar": st.session_state.body_right_b_pillar,
+            "Front Right Door": st.session_state.body_front_right_door,
+            "Right A-Pillar": st.session_state.body_right_a_pillar,
+            "Front Right Fender": st.session_state.body_front_right_fender,
+        }
+
+# 2️⃣  Create a dictionary for each comment field
+        car_body_comments = {
+            "front_bumper_comment": st.session_state.body_front_bumper_comment,
+            "bonnet_comment": st.session_state.body_bonnet_comment,
+            "front_windscreen_comment": st.session_state.body_front_windscreen_comment,
+            "front_left_fender_comment": st.session_state.body_front_left_fender_comment,
+            "left_a_pillar_comment": st.session_state.body_left_a_pillar_comment,
+            "front_left_door_comment": st.session_state.body_front_left_door_comment,
+            "roof_comment": st.session_state.body_roof_comment,
+            "left_b_pillar_comment": st.session_state.body_left_b_pillar_comment,
+            "back_left_door_comment": st.session_state.body_back_left_door_comment,
+            "left_c_pillar_comment": st.session_state.body_left_c_pillar_comment,
+            "left_d_pillar_comment": st.session_state.body_left_d_pillar_comment,
+            "back_left_quarter_panel_comment": st.session_state.body_back_left_quarter_comment,
+            "rear_bumper_comment": st.session_state.body_rear_bumper_comment,
+            "trunk_lid_comment": st.session_state.body_trunk_lid_comment,
+            "back_right_quarter_panel_comment": st.session_state.body_back_right_quarter_comment,
+            "rear_windscreen_comment": st.session_state.body_rear_windscreen_comment,
+            "right_d_pillar_comment": st.session_state.body_right_d_pillar_comment,
+            "right_c_pillar_comment": st.session_state.body_right_c_pillar_comment,
+            "back_right_door_comment": st.session_state.body_back_right_door_comment,
+            "right_b_pillar_comment": st.session_state.body_right_b_pillar_comment,
+            "front_right_door_comment": st.session_state.body_front_right_door_comment,
+            "right_a_pillar_comment": st.session_state.body_right_a_pillar_comment,
+            "front_right_fender_comment": st.session_state.body_front_right_fender_comment,
+        }
+
+# 3️⃣  Combine everything into one structured object for Jinja
         car_body = {
-            "body_images": [f.name for f in body_images] if body_images else [],
-            "panels": {
-                "Front Bumper": front_bumper,
-                "Bonnet": bonnet,
-                "Front Windscreen": front_windscreen,
-                "Front Left Fender": front_left_fender,
-                "Left A-Pillar": left_a_pillar,
-                "Front Left Door": front_left_door,
-                "Roof": roof,
-                "Left B-Pillar": left_b_pillar,
-                "Back Left Door": back_left_door,
-                "Left C-Pillar": left_c_pillar,
-                "Left D-Pillar": left_d_pillar,
-                "Back Left Quarter Panel": back_left_quarter_panel,
-                "Rear Bumper": rear_bumper,
-                "Trunk Lid": trunk_lid,
-                "Back Right Quarter Panel": back_right_quarter_panel,
-                "Rear Windscreen": rear_windscreen,
-                "Right D-Pillar": right_d_pillar,
-                "Right C-Pillar": right_c_pillar,
-                "Back Right Door": back_right_door,
-                "Right B-Pillar": right_b_pillar,
-                "Front Right Door": front_right_door,
-                "Right A-Pillar": right_a_pillar,
-                "Front Right Fender": front_right_fender
-            },
-            "overall_exterior_condition": exterior_condition,
-            "overall_interior_condition": interior_condition,
-            "comments": car_body_comments
+            "overall_exterior_condition": st.session_state.body_exterior_condition,
+            "overall_interior_condition": st.session_state.body_interior_condition,
+            "comments": st.session_state.body_comments,
         }
     
         # --- 6. Mechanical ---
@@ -923,7 +956,8 @@ with tab1:
             final=final,
             completion=completion,
             overall_condition=overall_condition_percent,
-            logo_base64=logo_base64,  # ✅ pass it to template
+            logo_base64=logo_base64,
+            car_body_comments=car_body_comments# ✅ pass it to template
         )
         
         # --- Convert to bytes for download ---

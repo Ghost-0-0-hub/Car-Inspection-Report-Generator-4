@@ -109,24 +109,27 @@ with tab2:
             margin-right: 8px;
             border: 1px solid #000;
         }}
-        /* 🔹 Mobile responsiveness */
+/* 🔹 Mobile responsiveness */
         @media (max-width: 768px) {{
-            #carCanvas {{
-                width: 100vw !important;
-                height: auto !important;
-            }}
-            h2 {{
-                font-size: 18px;
-            }}
-            .legend-item {{
-                font-size: 12px;
-                padding: 4px 8px;
-            }}
-            #downloadBtn {{
-                font-size: 14px;
-                padding: 10px 18px;
-            }}
+    #carCanvas {{
+            width: 110vw !important;  /* Make it slightly wider than screen */
+            max-width: none !important;
+            height: auto !important;
+            transform: scale(1.15);    /* Visually enlarge */
+            transform-origin: center top;
         }}
+        h2 {{
+            font-size: 18px;
+        }}
+        .legend-item {{
+            font-size: 12px;
+            padding: 4px 8px;
+        }}
+        #downloadBtn {{
+            font-size: 14px;
+            padding: 10px 18px;
+        }}
+    }}
     </style>
 
     <div style="display:flex; flex-direction:column; align-items:center; justify-content:center;">

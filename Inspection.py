@@ -244,11 +244,33 @@ with tab2:
 
     function drawAll() {{
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        const isMobile = window.innerWidth < 768;
+
+        if (isMobile) {{
+            // Rotate canvas for portrait mode
+            ctx.save();
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(-Math.PI / 2); // rotate 90 degrees counter-clockwise
+            ctx.drawImage(
+                img,
+                -canvas.height / 2,
+                -canvas.width / 2,
+                canvas.height,
+                canvas.width
+            );
+            ctx.restore();
+        }} else {{
+            // Normal horizontal orientation
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        }}
+
+        // Re-draw all annotations (adjusted for rotation)
         annotations.forEach(a => {{
-            drawAnnotation(a);
-        }});
+            drawAnnotationRotated(a);
+        });
     }}
+
 
     function drawAnnotation(a) {{
         const padding = 6;

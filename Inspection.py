@@ -228,9 +228,20 @@ with tab2:
     function resizeCanvas() {{
         const maxWidth = Math.min(window.innerWidth * 0.95, 900);
         const scale = Math.min(maxWidth / img.naturalWidth, 1);
-        canvas.width = img.naturalWidth * scale;
-        canvas.height = img.naturalHeight * scale;
+    
+        // Handle high-DPI screens
+        const dpr = window.devicePixelRatio || 1;
+    
+        canvas.width = img.naturalWidth * scale * dpr;
+        canvas.height = img.naturalHeight * scale * dpr;
+    
+        canvas.style.width = img.naturalWidth * scale + 'px';
+        canvas.style.height = img.naturalHeight * scale + 'px';
+    
+        // Scale context to match DPR
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }}
+
 
     function drawAll() {{
         ctx.clearRect(0, 0, canvas.width, canvas.height);

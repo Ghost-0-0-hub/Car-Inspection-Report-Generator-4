@@ -128,8 +128,8 @@ with tab2:
                 padding: 4px 8px;
             }}
             .legend-color {{
-                width: 10px;   /* smaller on mobile */
-                height: 10px;  /* smaller on mobile */
+                width: 5px;   /* smaller on mobile */
+                height: 5px;  /* smaller on mobile */
             }}
             #downloadBtn {{
                 font-size: 14px;

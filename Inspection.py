@@ -68,6 +68,12 @@ os.makedirs(REPORTS_DIR, exist_ok=True)
 # ================================
 tab1, tab2 = st.tabs(["Inspection Form", "Damage Diagram"])
 
+import streamlit as st
+import base64
+import streamlit.components.v1 as components
+
+tab1, tab2 = st.tabs(["Tab 1", "Car Damage Diagram"])
+
 with tab2:
     st.title("Car Damage Diagram")
 
@@ -77,60 +83,59 @@ with tab2:
 
     html_code = f"""
     <style>
-        body {{
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-            text-align: center;
-            font-family: 'Arial', sans-serif;
+    body {{
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        text-align: center;
+        font-family: 'Arial', sans-serif;
+    }}
+    .legend-container {{
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+        max-width: 90%;
+    }}
+    .legend-item {{
+        display: flex;
+        align-items: center;
+        background: #1e1e1e;
+        color: white;
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 14px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }}
+    .legend-color {{
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        margin-right: 8px;
+        border: 1px solid #000;
+    }}
+    @media (max-width: 768px) {{
+        #carCanvas {{
+            width: 95vw !important;
+            height: auto !important;
         }}
-        .legend-container {{
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 20px;
-            max-width: 90%;
+        h2 {{
+            font-size: 18px;
         }}
         .legend-item {{
-            display: flex;
-            align-items: center;
-            background: #1e1e1e;
-            color: white;
-            border-radius: 8px;
-            padding: 6px 12px;
+            font-size: 12px;
+            padding: 4px 8px;
+        }}
+        #downloadBtn {{
             font-size: 14px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            padding: 10px 18px;
         }}
-        .legend-color {{
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-            margin-right: 8px;
-            border: 1px solid #000;
-        }}
-        /* 🔹 Mobile responsiveness */
-        @media (max-width: 768px) {{
-            #carCanvas {{
-                width: 95vw !important;
-                height: auto !important;
-            }}
-            h2 {{
-                font-size: 18px;
-            }}
-            .legend-item {{
-                font-size: 12px;
-                padding: 4px 8px;
-            }}
-            #downloadBtn {{
-                font-size: 14px;
-                padding: 10px 18px;
-            }}
-        }}
+    }}
     </style>
 
     <div style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
-        <h2 style="text-align:center; margin-bottom:10px;">Car Damage Diagram</h2>
+        <h2>Car Damage Diagram</h2>
         <canvas id="carCanvas" style="border:1px solid #ccc; max-width:95%; height:auto;"></canvas>
 
         <select id="damageSelect" style="position:absolute; display:none; padding:5px;">
@@ -207,8 +212,7 @@ with tab2:
     Object.keys(damages).forEach(code => {{
         const item = document.createElement('div');
         item.className = 'legend-item';
-        item.innerHTML = `<div class='legend-color' style='background:${{colors[code]}}'></div>
-                          <strong>${{code}}</strong> – ${{damages[code]}}`;
+        item.innerHTML = `<div class='legend-color' style='background:${{colors[code]}}'></div><strong>${{code}}</strong> – ${{damages[code]}}`;
         legend.appendChild(item);
     }});
 
@@ -219,7 +223,6 @@ with tab2:
         drawAll();
     }};
 
-    // 🔹 Responsive resizing
     window.addEventListener('resize', () => {{
         resizeCanvas();
         drawAll();
@@ -228,44 +231,44 @@ with tab2:
     function resizeCanvas() {{
         const maxWidth = Math.min(window.innerWidth * 0.95, 900);
         const scale = Math.min(maxWidth / img.naturalWidth, 1);
-    
         const dpr = window.devicePixelRatio || 1;
 
-        // Set internal canvas resolution to be DPR-aware
         canvas.width = img.naturalWidth * scale * dpr;
         canvas.height = img.naturalHeight * scale * dpr;
 
-        // Display size stays the same
         canvas.style.width = img.naturalWidth * scale + 'px';
         canvas.style.height = img.naturalHeight * scale + 'px';
 
-        // Scale drawing context so annotations & image scale correctly
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }}
+
     function drawAll() {{
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0, canvas.width / (window.devicePixelRatio || 1), canvas.height / (window.devicePixelRatio || 1));
-        annotations.forEach(a => drawAnnotation(a));
+        annotations.forEach(a => {{
+            drawAnnotation(a);
+        }});
     }}
-
 
     function drawAnnotation(a) {{
         const padding = 6;
         ctx.font = 'bold 14px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
+        const x = a.x * canvas.width;
+        const y = a.y * canvas.height;
         const textWidth = ctx.measureText(a.code).width;
         const rectWidth = textWidth + padding*2;
         const rectHeight = 20;
-        const bx = a.x - rectWidth/2;
-        const by = a.y - rectHeight/2;
+        const bx = x - rectWidth/2;
+        const by = y - rectHeight/2;
         const bg = colors[a.code] || "#ff6666";
         ctx.fillStyle = bg;
         ctx.fillRect(bx, by, rectWidth, rectHeight);
         ctx.strokeStyle = "black";
         ctx.strokeRect(bx, by, rectWidth, rectHeight);
         ctx.fillStyle = getContrastYIQ(bg);
-        ctx.fillText(a.code, a.x, a.y);
+        ctx.fillText(a.code, x, y);
     }}
 
     function getCanvasCoordinates(e) {{
@@ -278,14 +281,14 @@ with tab2:
             clientX = e.clientX;
             clientY = e.clientY;
         }}
-        const x = (clientX - rect.left) * (canvas.width / rect.width);
-        const y = (clientY - rect.top) * (canvas.height / rect.height);
+        const x = (clientX - rect.left) / rect.width;
+        const y = (clientY - rect.top) / rect.height;
         return {{x, y}};
     }}
 
     function showDropdown(x, y, clientX, clientY) {{
-        damageSelect.style.left = clientX + 'px';
-        damageSelect.style.top = clientY + 'px';
+        damageSelect.style.left = Math.min(clientX, window.innerWidth - damageSelect.offsetWidth) + 'px';
+        damageSelect.style.top = Math.min(clientY, window.innerHeight - damageSelect.offsetHeight) + 'px';
         damageSelect.style.display = 'block';
         damageSelect.dataset.x = x;
         damageSelect.dataset.y = y;
@@ -315,7 +318,11 @@ with tab2:
     damageSelect.addEventListener('change', (e) => {{
         const code = e.target.value;
         if(!code) return;
-        annotations.push({{code, x:e.target.dataset.x, y:e.target.dataset.y}});
+        annotations.push({{
+            code,
+            x: parseFloat(e.target.dataset.x),
+            y: parseFloat(e.target.dataset.y)
+        }});
         drawAll();
         damageSelect.style.display='none';
         damageSelect.value='';
@@ -331,11 +338,6 @@ with tab2:
     """
 
     components.html(html_code, height=900)
-
-
-
-
-
     # ================================
 # --- INSPECTION FORM TAB ---
 # ================================

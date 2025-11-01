@@ -281,6 +281,7 @@ with tab2:
 
     function getCanvasCoordinates(e) {{
         const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;  // get devicePixelRatio
         let clientX, clientY;
         if (e.touches) {{
             clientX = e.touches[0].clientX;
@@ -289,10 +290,13 @@ with tab2:
             clientX = e.clientX;
             clientY = e.clientY;
         }}
-        const x = (clientX - rect.left) * (canvas.width / rect.width);
-        const y = (clientY - rect.top) * (canvas.height / rect.height);
-        return {{x, y}};
+
+        // Correct scaling with devicePixelRatio
+        const x = (clientX - rect.left) * (canvas.width / (rect.width * dpr));
+        const y = (clientY - rect.top) * (canvas.height / (rect.height * dpr));
+        return {x, y};
     }}
+
 
     function showDropdown(x, y, clientX, clientY) {{
         damageSelect.style.left = clientX + 'px';

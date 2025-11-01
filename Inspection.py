@@ -109,27 +109,24 @@ with tab2:
             margin-right: 8px;
             border: 1px solid #000;
         }}
-/* 🔹 Mobile responsiveness */
+        /* 🔹 Mobile responsiveness */
         @media (max-width: 768px) {{
-    #carCanvas {{
-            width: 110vw !important;  /* Make it slightly wider than screen */
-            max-width: none !important;
-            height: auto !important;
-            transform: scale(1.15);    /* Visually enlarge */
-            transform-origin: center top;
+            #carCanvas {{
+                width: 95vw !important;
+                height: auto !important;
+            }}
+            h2 {{
+                font-size: 18px;
+            }}
+            .legend-item {{
+                font-size: 12px;
+                padding: 4px 8px;
+            }}
+            #downloadBtn {{
+                font-size: 14px;
+                padding: 10px 18px;
+            }}
         }}
-        h2 {{
-            font-size: 18px;
-        }}
-        .legend-item {{
-            font-size: 12px;
-            padding: 4px 8px;
-        }}
-        #downloadBtn {{
-            font-size: 14px;
-            padding: 10px 18px;
-        }}
-    }}
     </style>
 
     <div style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
@@ -230,47 +227,18 @@ with tab2:
 
     function resizeCanvas() {{
         const maxWidth = Math.min(window.innerWidth * 0.95, 900);
-
-        // ✅ If on mobile (less than 768px), zoom in the image a bit (e.g. 1.2x)
-        const isMobile = window.innerWidth < 768;
-        const mobileZoom = isMobile ? 1.25 : 1; // increase this if you want it even larger
-
-        const scale = Math.min(maxWidth / img.naturalWidth, 1) * mobileZoom;
-
+        const scale = Math.min(maxWidth / img.naturalWidth, 1);
         canvas.width = img.naturalWidth * scale;
         canvas.height = img.naturalHeight * scale;
     }}
 
-
     function drawAll() {{
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        const isMobile = window.innerWidth < 768;
-
-        if (isMobile) {{
-            // Rotate canvas for portrait mode
-            ctx.save();
-            ctx.translate(canvas.width / 2, canvas.height / 2);
-            ctx.rotate(-Math.PI / 2); // rotate 90 degrees counter-clockwise
-            ctx.drawImage(
-                img,
-                -canvas.height / 2,
-                -canvas.width / 2,
-                canvas.height,
-                canvas.width
-            );
-            ctx.restore();
-        }} else {{
-            // Normal horizontal orientation
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        }}
-
-        // Re-draw all annotations (adjusted for rotation)
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         annotations.forEach(a => {{
-            drawAnnotationRotated(a);
+            drawAnnotation(a);
         }});
     }}
-
 
     function drawAnnotation(a) {{
         const padding = 6;

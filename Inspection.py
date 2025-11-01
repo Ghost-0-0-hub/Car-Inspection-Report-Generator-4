@@ -112,7 +112,7 @@ with tab2:
         /* 🔹 Mobile responsiveness */
         @media (max-width: 768px) {{
             #carCanvas {{
-                width: 95vw !important;
+                width: 100vw !important;
                 height: auto !important;
             }}
             h2 {{

@@ -227,10 +227,17 @@ with tab2:
 
     function resizeCanvas() {{
         const maxWidth = Math.min(window.innerWidth * 0.95, 900);
-        const scale = Math.min(maxWidth / img.naturalWidth, 1);
+
+        // ✅ If on mobile (less than 768px), zoom in the image a bit (e.g. 1.2x)
+        const isMobile = window.innerWidth < 768;
+        const mobileZoom = isMobile ? 1.25 : 1; // increase this if you want it even larger
+
+        const scale = Math.min(maxWidth / img.naturalWidth, 1) * mobileZoom;
+
         canvas.width = img.naturalWidth * scale;
         canvas.height = img.naturalHeight * scale;
     }}
+
 
     function drawAll() {{
         ctx.clearRect(0, 0, canvas.width, canvas.height);

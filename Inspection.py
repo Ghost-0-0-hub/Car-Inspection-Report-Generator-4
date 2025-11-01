@@ -70,9 +70,6 @@ tab1, tab2 = st.tabs(["Inspection Form", "Damage Diagram"])
 # ================================
 # --- DAMAGE DIAGRAM TAB ---
 # ================================
-# ================================
-# --- DAMAGE DIAGRAM TAB ---
-# ================================
 with tab2:
     st.title("Car Damage Diagram")
 
@@ -128,8 +125,8 @@ with tab2:
                 padding: 4px 8px;
             }}
             .legend-color {{
-                width: 5px;   /* smaller on mobile */
-                height: 5px;  /* smaller on mobile */
+                width: 10px;   /* smaller on mobile */
+                height: 10x;  /* smaller on mobile */
             }}
             #downloadBtn {{
                 font-size: 14px;
@@ -266,16 +263,25 @@ with tab2:
 
 
     function drawAnnotation(a) {{
-        const padding = 6;
-        ctx.font = 'bold 14px Arial';
+        let padding = 6;
+        let fontSize = 14;
+
+        // Make it smaller on mobile
+        if (window.innerWidth <= 768) {{
+            padding = 4;
+            fontSize = 12;
+        }}
+
+        ctx.font = `bold ${fontSize}px Arial`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         const textWidth = ctx.measureText(a.code).width;
-        const rectWidth = textWidth + padding*2;
-        const rectHeight = 20;
-        const bx = a.x - rectWidth/2;
-        const by = a.y - rectHeight/2;
+        const rectWidth = textWidth + padding * 2;
+        const rectHeight = fontSize + padding;  // adjust height based on font size
+        const bx = a.x - rectWidth / 2;
+        const by = a.y - rectHeight / 2;
         const bg = colors[a.code] || "#ff6666";
+
         ctx.fillStyle = bg;
         ctx.fillRect(bx, by, rectWidth, rectHeight);
         ctx.strokeStyle = "black";
@@ -283,6 +289,7 @@ with tab2:
         ctx.fillStyle = getContrastYIQ(bg);
         ctx.fillText(a.code, a.x, a.y);
     }}
+
 
     function getCanvasCoordinates(e) {{
         const rect = canvas.getBoundingClientRect();

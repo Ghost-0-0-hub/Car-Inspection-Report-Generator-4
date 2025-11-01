@@ -127,11 +127,16 @@ with tab2:
                 font-size: 12px;
                 padding: 4px 8px;
             }}
+            .legend-color {{
+                width: 10px;   /* smaller on mobile */
+                height: 10px;  /* smaller on mobile */
+            }}
             #downloadBtn {{
                 font-size: 14px;
                 padding: 10px 18px;
-            }}
+            }}    
         }}
+
     </style>
 
     <div style="display:flex; flex-direction:column; align-items:center; justify-content:center;">

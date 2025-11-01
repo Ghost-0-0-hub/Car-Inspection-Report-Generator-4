@@ -233,23 +233,32 @@ with tab2:
     function resizeCanvas() {{
         const maxWidth = Math.min(window.innerWidth * 0.95, 900);
         const scale = Math.min(maxWidth / img.naturalWidth, 1);
-
-        // 🔹 High-DPI / crisp rendering
         const dpr = window.devicePixelRatio || 1;
-        canvas.width = img.naturalWidth * scale * dpr;
-        canvas.height = img.naturalHeight * scale * dpr;
+
+        // Set canvas display size in CSS pixels
         canvas.style.width = img.naturalWidth * scale + "px";
         canvas.style.height = img.naturalHeight * scale + "px";
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);  // fix scaling
+
+        // Set internal resolution in device pixels
+        canvas.width = img.naturalWidth * scale * dpr;
+        canvas.height = img.naturalHeight * scale * dpr;
+
+        // Scale the context so 1 unit = 1 CSS pixel
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }}
 
     function drawAll() {{
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        // Draw the image to fill the canvas visually
+        ctx.drawImage(img, 0, 0, canvas.width / (window.devicePixelRatio || 1), canvas.height / (window.devicePixelRatio || 1));
+
+        // Draw all annotations
         annotations.forEach(a => {{
             drawAnnotation(a);
         }});
     }}
+
 
     function drawAnnotation(a) {{
         const padding = 6;

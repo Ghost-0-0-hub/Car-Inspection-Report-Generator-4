@@ -268,8 +268,8 @@ with tab2:
 
         // Make it smaller on mobile
         if (window.innerWidth <= 768) {{
-            padding = 4;
-            fontSize = 12;
+            padding = 2;
+            fontSize = 10;
         }}
 
         ctx.font = `bold ${{fontSize}}px Arial`;

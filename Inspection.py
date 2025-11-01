@@ -6,8 +6,8 @@ from jinja2 import Template
 from datetime import datetime
 
 # --- Login Credentials ---
-USERNAME = "admin"
-PASSWORD = "1234"
+USERNAME = "carobar"
+PASSWORD = "Carobar007"
 
 # --- Initialize login state ---
 if "logged_in" not in st.session_state:

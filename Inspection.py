@@ -112,8 +112,8 @@ with tab2:
         /* 🔹 Mobile responsiveness */
         @media (max-width: 768px) {{
             #carCanvas {{
-                width: auto !important;
-                height: 95vh !important;
+                width: 95vw !important;
+                height: auto !important;
             }}
             h2 {{
                 font-size: 18px;
@@ -226,42 +226,18 @@ with tab2:
     }});
 
     function resizeCanvas() {{
-        const isMobile = window.innerWidth < 768;
         const maxWidth = Math.min(window.innerWidth * 0.95, 900);
-
-        if (isMobile && img.naturalWidth > img.naturalHeight) {{
-            // Rotate vertically if image is wider than tall
-            const scale = Math.min(maxWidth / img.naturalHeight, 1);
-            canvas.width = img.naturalHeight * scale;
-            canvas.height = img.naturalWidth * scale;
-            canvas.dataset.rotated = "true";
-        }} else {{
-            const scale = Math.min(maxWidth / img.naturalWidth, 1);
-            canvas.width = img.naturalWidth * scale;
-            canvas.height = img.naturalHeight * scale;
-            canvas.dataset.rotated = "false";
-        }}
+        const scale = Math.min(maxWidth / img.naturalWidth, 1);
+        canvas.width = img.naturalWidth * scale;
+        canvas.height = img.naturalHeight * scale;
     }}
 
     function drawAll() {{
-        const rotated = canvas.dataset.rotated === "true";
-
-        ctx.save();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        if (rotated) {{
-            // Rotate 90° clockwise for vertical
-            ctx.translate(canvas.width, 0);
-            ctx.rotate(Math.PI / 2);
-            const scale = canvas.height / img.naturalHeight;
-            ctx.drawImage(img, 0, 0, img.naturalWidth * scale, img.naturalHeight * scale);
-            annotations.forEach(a => drawAnnotationRotated(a));
-        }} else {{
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            annotations.forEach(a => drawAnnotation(a));
-        }}
-
-        ctx.restore();
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        annotations.forEach(a => {{
+            drawAnnotation(a);
+        }});
     }}
 
     function drawAnnotation(a) {{
@@ -281,35 +257,6 @@ with tab2:
         ctx.strokeRect(bx, by, rectWidth, rectHeight);
         ctx.fillStyle = getContrastYIQ(bg);
         ctx.fillText(a.code, a.x, a.y);
-    }}
-
-    function drawAnnotationRotated(a) {{
-        const padding = 6;
-        const bg = colors[a.code] || "#ff6666";
-
-        // Rotate coordinates 90° clockwise
-        const rotatedX = a.y * (canvas.width / canvas.height);
-        const rotatedY = canvas.height - a.x * (canvas.height / canvas.width);
-
-        ctx.save();
-        ctx.translate(canvas.width, 0);
-        ctx.rotate(Math.PI / 2);
-        ctx.font = 'bold 14px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        const textWidth = ctx.measureText(a.code).width;
-        const rectWidth = textWidth + padding * 2;
-        const rectHeight = 20;
-        const bx = rotatedX - rectWidth / 2;
-        const by = rotatedY - rectHeight / 2;
-
-        ctx.fillStyle = bg;
-        ctx.fillRect(bx, by, rectWidth, rectHeight);
-        ctx.strokeStyle = "black";
-        ctx.strokeRect(bx, by, rectWidth, rectHeight);
-        ctx.fillStyle = getContrastYIQ(bg);
-        ctx.fillText(a.code, rotatedX, rotatedY);
-        ctx.restore();
     }}
 
     function getCanvasCoordinates(e) {{
@@ -359,7 +306,7 @@ with tab2:
     damageSelect.addEventListener('change', (e) => {{
         const code = e.target.value;
         if(!code) return;
-        annotations.push({{code, x:parseFloat(e.target.dataset.x), y:parseFloat(e.target.dataset.y)}});
+        annotations.push({{code, x:e.target.dataset.x, y:e.target.dataset.y}});
         drawAll();
         damageSelect.style.display='none';
         damageSelect.value='';
@@ -375,7 +322,6 @@ with tab2:
     """
 
     components.html(html_code, height=900)
-
 
 
 

@@ -229,27 +229,25 @@ with tab2:
         const maxWidth = Math.min(window.innerWidth * 0.95, 900);
         const scale = Math.min(maxWidth / img.naturalWidth, 1);
     
-        // Handle high-DPI screens
         const dpr = window.devicePixelRatio || 1;
-    
+
+        // Set internal canvas resolution to be DPR-aware
         canvas.width = img.naturalWidth * scale * dpr;
         canvas.height = img.naturalHeight * scale * dpr;
-    
+
+        // Display size stays the same
         canvas.style.width = img.naturalWidth * scale + 'px';
         canvas.style.height = img.naturalHeight * scale + 'px';
-    
-        // Scale context to match DPR
+
+        // Scale drawing context so annotations & image scale correctly
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }}
-
-
     function drawAll() {{
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        annotations.forEach(a => {{
-            drawAnnotation(a);
-        }});
+        ctx.drawImage(img, 0, 0, canvas.width / (window.devicePixelRatio || 1), canvas.height / (window.devicePixelRatio || 1));
+        annotations.forEach(a => drawAnnotation(a));
     }}
+
 
     function drawAnnotation(a) {{
         const padding = 6;

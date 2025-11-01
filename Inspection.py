@@ -268,7 +268,7 @@ with tab2:
         // Re-draw all annotations (adjusted for rotation)
         annotations.forEach(a => {{
             drawAnnotationRotated(a);
-        });
+        }});
     }}
 
 

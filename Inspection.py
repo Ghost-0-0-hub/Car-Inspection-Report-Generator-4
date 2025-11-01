@@ -272,7 +272,7 @@ with tab2:
             fontSize = 12;
         }}
 
-        ctx.font = `bold ${fontSize}px Arial`;
+        ctx.font = `bold ${{fontSize}}px Arial`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         const textWidth = ctx.measureText(a.code).width;

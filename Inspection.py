@@ -67,11 +67,9 @@ os.makedirs(REPORTS_DIR, exist_ok=True)
 # --- TABS ---
 # ================================
 tab1, tab2 = st.tabs(["Inspection Form", "Damage Diagram"])
-
-import streamlit as st
-import base64
-import streamlit.components.v1 as components
-
+# ================================
+# --- DAMAGE DIAGRAM TAB ---
+# ================================
 # ================================
 # --- DAMAGE DIAGRAM TAB ---
 # ================================
@@ -110,8 +108,8 @@ with tab2:
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }}
         .legend-color {{
-            width: 20px;
-            height: 20px;
+            width: 14px;  /* smaller size */
+            height: 14px; /* smaller size */
             border-radius: 4px;
             margin-right: 8px;
             border: 1px solid #000;
@@ -235,8 +233,14 @@ with tab2:
     function resizeCanvas() {{
         const maxWidth = Math.min(window.innerWidth * 0.95, 900);
         const scale = Math.min(maxWidth / img.naturalWidth, 1);
-        canvas.width = img.naturalWidth * scale;
-        canvas.height = img.naturalHeight * scale;
+
+        // 🔹 High-DPI / crisp rendering
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = img.naturalWidth * scale * dpr;
+        canvas.height = img.naturalHeight * scale * dpr;
+        canvas.style.width = img.naturalWidth * scale + "px";
+        canvas.style.height = img.naturalHeight * scale + "px";
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);  // fix scaling
     }}
 
     function drawAll() {{
@@ -329,6 +333,7 @@ with tab2:
     """
 
     components.html(html_code, height=900)
+
 
 
     # ================================

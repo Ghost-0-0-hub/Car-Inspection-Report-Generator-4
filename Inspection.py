@@ -294,7 +294,7 @@ with tab2:
         // Correct scaling with devicePixelRatio
         const x = (clientX - rect.left) * (canvas.width / (rect.width * dpr));
         const y = (clientY - rect.top) * (canvas.height / (rect.height * dpr));
-        return {x, y};
+        return {{x, y}};
     }}
 
 

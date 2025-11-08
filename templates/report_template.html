@@ -298,7 +298,16 @@
 <table>
 <tr><th>Document</th><th>Status</th></tr>
 {% for key, value in documents.items() %}
-<tr><td class="field-label">{{ key.replace('_',' ').title() }}</td><td>{{ value }}</td></tr>
+<tr>
+    <td class="field-label">{{ key.replace('_',' ').title() }}</td>
+    <td>
+        {% if value == "Not Confirmed" %}
+            <i>Not Confirmed</i>
+        {% else %}
+            {{ value }}
+        {% endif %}
+    </td>
+</tr>
 {% endfor %}
 </table>
 {% endset %}
@@ -307,16 +316,40 @@
 <!-- Interior -->
 {% set interior_content %}
 <table>
-<tr><th>Item</th><th>Condition</th></tr>
-{% for key, value in interior.items() if key != 'interior_comments' %}
-<tr><td class="field-label">{{ key.replace('_',' ').title() }}</td><td>{{ value }}</td></tr>
-{% endfor %}
+<tr><th>Item</th><th>Condition / Status</th></tr>
+
+<!-- Air Conditioning -->
+<tr><td class="field-label">Air Conditioning</td><td>{{ interior.ac }}</td></tr>
+<tr><td class="field-label">Vents Condition</td><td>{{ interior.vents_condition }}</td></tr>
+
+<!-- Steering Wheel / Driver Airbag -->
+<tr><td class="field-label">Steering Wheel</td><td>{{ interior.steering_wheel }}</td></tr>
+<tr><td class="field-label">Driver Side Impact Airbag Present</td><td>{{ interior.driver_airbag_present }}</td></tr>
+<tr><td class="field-label">Driver Side Impact Airbag Condition</td><td>{{ interior.driver_airbag_condition }}</td></tr>
+
+<!-- Carpet -->
+<tr><td class="field-label">Driver Side Carpet</td><td>{{ interior.driver_carpet }}</td></tr>
+<tr><td class="field-label">Driver Seat Carpet Condition</td><td>{{ interior.driver_seat_carpet_condition }}</td></tr>
+<tr><td class="field-label">Passenger Side Carpet</td><td>{{ interior.passenger_carpet }}</td></tr>
+<tr><td class="field-label">Passenger Seat Carpet Condition</td><td>{{ interior.passenger_seat_carpet_condition }}</td></tr>
+
+<!-- Seats -->
+<tr><td class="field-label">Driver Seat Condition</td><td>{{ interior.driver_seat_condition }}</td></tr>
+<tr><td class="field-label">Driver Seat Control Function</td><td>{{ interior.driver_seat_control }}</td></tr>
+<tr><td class="field-label">Passenger Seat Condition</td><td>{{ interior.passenger_seat_condition }}</td></tr>
+
+<!-- Passenger Airbag -->
+<tr><td class="field-label">Passenger Side Impact Airbag Present</td><td>{{ interior.passenger_airbag_present }}</td></tr>
+<tr><td class="field-label">Passenger Side Impact Airbag Condition</td><td>{{ interior.passenger_airbag_condition }}</td></tr>
+
 </table>
+
 {% if interior.interior_comments %}
 <div class="comments"><strong>Comments:</strong> {{ interior.interior_comments }}</div>
 {% endif %}
 {% endset %}
 {{ accordion('Interior', interior_content, completion.interior) }}
+
 
 <!-- Car Body Evaluation -->
 {% set car_body_content %}

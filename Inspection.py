@@ -1084,6 +1084,30 @@ with tab1:
         with open(TEMPLATE_PATH , "r", encoding='utf-8') as f:
             template = Template(f.read())
 
+        import re
+
+        structured_car_body_panels = {}
+
+        for panel_name, condition in car_body_panels.items():
+            # Normalize panel name:
+            # 1. Lowercase
+            # 2. Replace spaces, hyphens, and slashes with underscores
+            # 3. Remove any double underscores
+            normalized_key = re.sub(r'[-/]', '_', panel_name.lower().replace(" ", "_"))
+            normalized_key = re.sub(r'__+', '_', normalized_key)
+
+            # Append "_comment"
+            comment_key = f"{normalized_key}_comment"
+
+            # Get the comment safely
+            comment_text = car_body_comments.get(comment_key, "")
+
+            structured_car_body_panels[panel_name] = {
+                "condition": condition,
+                "comment": comment_text
+            }
+
+
         # --- Render the HTML template ---
         html = template.render(
             date=datetime.now().strftime("%d-%b-%Y"),
@@ -1092,7 +1116,7 @@ with tab1:
             documents=documents,
             interior=interior,
             car_body=car_body,
-            car_body_panels=car_body_panels,
+            car_body_panels=structured_car_body_panels,   # ✅ Updated
             mechanical=mechanical,
             suspension=suspension,
             suspension_parts={
@@ -1106,9 +1130,9 @@ with tab1:
             final=final,
             completion=completion,
             overall_condition=overall_condition_percent,
-            logo_base64=logo_base64,
-            car_body_comments=car_body_comments# ✅ pass it to template
+            logo_base64=logo_base64
         )
+
         
         # --- Convert to bytes for download ---
         report_bytes = html.encode("utf-8")
@@ -1137,4 +1161,3 @@ with tab1:
     
         st.success("✅ Report ready for download!")
         st.balloons()
-    

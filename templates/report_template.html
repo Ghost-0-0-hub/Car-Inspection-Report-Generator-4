@@ -336,7 +336,16 @@
 </tr>
 {% endfor %}
 </table>
-
+{% if body_images %}
+<h3 style="margin-top: 20px;">Car Body Evaluation Photos</h3>
+<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+  {% for img in body_images %}
+    <div style="border: 1px solid #ddd; padding: 5px; border-radius: 8px;">
+      <img src="{{ img }}" alt="Car Body Image" style="width: 200px; height: auto; border-radius: 6px;">
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
 <div class="comments">
 <strong>Overall Exterior:</strong> {{ car_body.overall_exterior_condition }}<br>
 <strong>Overall Interior:</strong> {{ car_body.overall_interior_condition }}<br>

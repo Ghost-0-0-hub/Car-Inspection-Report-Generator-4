@@ -321,18 +321,30 @@
 <!-- Car Body Evaluation -->
 {% set car_body_content %}
 <table>
-<tr><th>Panel</th><th>Condition</th></tr>
-{% for panel, condition in car_body_panels.items() %}
-<tr><td class="field-label">{{ panel }}</td><td>{{ condition }}</td></tr>
+<tr><th>Panel</th><th>Condition</th><th>Comment</th></tr>
+{% for panel, panel_data in car_body_panels.items() %}
+<tr>
+  <td class="field-label">{{ panel }}</td>
+  <td>{{ panel_data.condition }}</td>
+  <td>
+    {% if panel_data.comment %}
+      <div class="comments">{{ panel_data.comment }}</div>
+    {% else %}
+      -
+    {% endif %}
+  </td>
+</tr>
 {% endfor %}
 </table>
+
 <div class="comments">
 <strong>Overall Exterior:</strong> {{ car_body.overall_exterior_condition }}<br>
 <strong>Overall Interior:</strong> {{ car_body.overall_interior_condition }}<br>
-<strong>Comments:</strong> {{ car_body.comments }}
+<strong>General Comments:</strong> {{ car_body.comments }}
 </div>
 {% endset %}
 {{ accordion('Car Body Evaluation', car_body_content, completion.car_body) }}
+
 
 <!-- Mechanical -->
 {% set mechanical_content %}
@@ -427,5 +439,12 @@
 </div>
 {% endset %}
 {{ accordion('Final Comments', final_content, completion.final) }}
+<!-- Car Damage Diagram -->
+{% if car_damage_diagram_b64 %}
+<div style="margin-top:30px; text-align:center;">
+    <h2 style="color:#1b4f72;">Car Damage Diagram</h2>
+    <img src="{{ car_damage_diagram_b64 }}" alt="Car Damage Diagram" style="max-width:95%; border:1px solid #ccc; border-radius:8px;">
+</div>
+{% endif %}
 </body>
 </html>

@@ -1106,6 +1106,19 @@ with tab1:
                 "condition": condition,
                 "comment": comment_text
             }
+        import base64
+
+        # --- Handle Body Evaluation Images ---
+        body_images_base64 = []
+
+        if "body_images" in st.session_state:
+            for uploaded_file in st.session_state.body_images or []:
+                try:
+                    image_bytes = uploaded_file.read()
+                    encoded = base64.b64encode(image_bytes).decode("utf-8")
+                    body_images_base64.append(f"data:image/jpeg;base64,{encoded}")
+                except Exception as e:
+                    st.warning(f"Error loading {uploaded_file.name}: {e}")
 
 
         # --- Render the HTML template ---
@@ -1130,7 +1143,8 @@ with tab1:
             final=final,
             completion=completion,
             overall_condition=overall_condition_percent,
-            logo_base64=logo_base64
+            logo_base64=logo_base64,
+            body_images=body_images_base64
         )
 
         

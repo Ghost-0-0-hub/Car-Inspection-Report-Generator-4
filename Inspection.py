@@ -431,24 +431,52 @@ with tab1:
         original_card = st.selectbox("Original Card", ["Yes", "No"], key="doc_original_card")
         original_file = st.selectbox("Original File", ["Yes", "No"], key="doc_original_file")
         number_plate_condition = st.selectbox("Number Plate Condition", ["Original", "Not Original"], key="doc_number_plate")
-        registration_certificate = st.selectbox("Registration Certificate", ["Yes", "No"], key="doc_registration_cert")
-        insurance_copy = st.selectbox("Insurance Copy", ["Yes", "No"], key="doc_insurance_copy")
-        no_of_owners = st.number_input("Number of Previous Owners", min_value=0, key="doc_no_of_owners")
-        no_of_keys = st.number_input("Number of Keys", min_value=0, key="doc_no_of_keys")
-
+    
+        # Updated fields
+        no_of_owners = st.selectbox(
+            "Number of Previous Owners",
+            ["Not Confirmed", "0", "1", "2", "3", "4", "5+"],
+            key="doc_no_of_owners"
+        )
+    
+        no_of_keys = st.selectbox(
+            "Number of Keys",
+            ["Not Confirmed", "0", "1", "2", "3", "4+"],
+            key="doc_no_of_keys"
+        )
+    
     # ========================
     # --- Interior ---
     # ========================
     with st.expander("Interior", expanded=False):
-        dashboard = st.selectbox("Dashboard Condition", ["Good", "Average", "Bad"], key="int_dashboard")
-        seats = st.selectbox("Seat Condition", ["Good", "Average", "Bad"], key="int_seats")
-        roof_liner = st.selectbox("Roof Liner Condition", ["Good", "Average", "Bad"], key="int_roof_liner")
-        ac_heater = st.selectbox("A/C & Heater", ["Working", "Not Working"], key="int_ac_heater")
-        infotainment = st.selectbox("Infotainment / Stereo", ["Working", "Not Working"], key="int_infotainment")
-        seat_belts = st.selectbox("Seat Belts Condition", ["Good", "Average", "Bad"], key="int_seat_belts")
-        interior_lights = st.selectbox("Interior Lights", ["Working", "Faulty"], key="int_lights")
-        pedals = st.selectbox("Pedals Condition", ["Good", "Worn", "Needs Replacement"], key="int_pedals")
+
+        # Air Conditioning
+        ac = st.selectbox("Air Conditioning", ["Ok", "Not Working"], key="int_ac")
+        vents_condition = st.selectbox("Vents Condition", ["Ok", "Blocked", "Damaged"], key="int_vents_condition")
+
+        # Steering Wheel
+        steering_wheel = st.selectbox("Steering Wheel Condition", ["Ok", "Worn", "Damaged"], key="int_steering_wheel")
+        driver_airbag_present = st.selectbox("Has Driver Side Impact Airbag", ["Yes", "No"], key="int_driver_airbag_present")
+        driver_airbag_condition = st.selectbox("Driver Side Impact Airbag Condition", ["Ok", "Faulty", "Missing"], key="int_driver_airbag_condition")
+
+        # Carpet
+        driver_carpet = st.selectbox("Driver Side Carpet", ["Ok", "Stained", "Damaged"], key="int_driver_carpet")
+        driver_seat_carpet_condition = st.selectbox("Driver Seat Carpet Condition", ["Ok", "Stained", "Damaged"], key="int_driver_seat_carpet_condition")
+        passenger_carpet = st.selectbox("Passenger Side Carpet", ["Ok", "Stained", "Damaged"], key="int_passenger_carpet")
+        passenger_seat_carpet_condition = st.selectbox("Passenger Seat Carpet Condition", ["Ok", "Stained", "Damaged"], key="int_passenger_seat_carpet_condition")
+
+        # Seats
+        driver_seat_condition = st.selectbox("Driver Seat Condition", ["Ok", "Worn", "Damaged"], key="int_driver_seat_condition")
+        driver_seat_control = st.selectbox("Driver Seat Control Function", ["Ok", "Faulty", "Not Working"], key="int_driver_seat_control")
+        passenger_seat_condition = st.selectbox("Passenger Seat Condition", ["Ok", "Worn", "Damaged"], key="int_passenger_seat_condition")
+
+        # Passenger Airbag
+        passenger_airbag_present = st.selectbox("Has Passenger Side Impact Airbag", ["Yes", "No"], key="int_passenger_airbag_present")
+        passenger_airbag_condition = st.selectbox("Passenger Side Impact Airbag Condition", ["Ok", "Faulty", "Missing"], key="int_passenger_airbag_condition")
+
+        # General Comments
         interior_comments = st.text_area("Interior Comments", key="int_comments")
+
 
     # ========================
     # --- Car Body Evaluation ---
@@ -686,25 +714,40 @@ with tab1:
             "original_card": original_card,
             "original_file": original_file,
             "number_plate_condition": number_plate_condition,
-            "registration_certificate": registration_certificate,
-            "insurance_copy": insurance_copy,
             "no_of_owners": no_of_owners,
             "no_of_keys": no_of_keys
         }
     
         # --- 4. Interior ---
         interior = {
-            "dashboard": dashboard,
-            "seats": seats,
-            "roof_liner": roof_liner,
-            "ac_heater": ac_heater,
-            "infotainment": infotainment,
-            "seat_belts": seat_belts,
-            "interior_lights": interior_lights,
-            "pedals": pedals,
+            # Air Conditioning
+            "ac": ac,
+            "vents_condition": vents_condition,
+        
+            # Steering Wheel / Driver Airbag
+            "steering_wheel": steering_wheel,
+            "driver_airbag_present": driver_airbag_present,
+            "driver_airbag_condition": driver_airbag_condition,
+        
+            # Carpet
+            "driver_carpet": driver_carpet,
+            "driver_seat_carpet_condition": driver_seat_carpet_condition,
+            "passenger_carpet": passenger_carpet,
+            "passenger_seat_carpet_condition": passenger_seat_carpet_condition,
+        
+            # Seats
+            "driver_seat_condition": driver_seat_condition,
+            "driver_seat_control": driver_seat_control,
+            "passenger_seat_condition": passenger_seat_condition,
+        
+            # Passenger Airbag
+            "passenger_airbag_present": passenger_airbag_present,
+            "passenger_airbag_condition": passenger_airbag_condition,
+        
+            # General Comments
             "interior_comments": interior_comments
         }
-    
+        
         # --- 5. Car Body Evaluation ---
 # ===============================
 # --- Collect Car Body Data ---

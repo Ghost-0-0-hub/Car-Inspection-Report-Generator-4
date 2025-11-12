@@ -564,6 +564,49 @@ with tab1:
 
         car_body_comments = st.text_area("General Car Body Comments / Observations", key="body_comments")
 
+        import streamlit as st
+
+    with st.expander('Exterior',expanded=False):
+
+        # ----- FRAME & STRUCTURE -----
+        frame_type = st.selectbox("Frame Type", ["Unibody", "Body-on-Frame", "Other"])
+        front_right_rail = st.selectbox("Front Right Rail Condition", ["Good", "Fair", "Poor", "Damaged"])
+        front_left_rail = st.selectbox("Front Left Rail Condition", ["Good", "Fair", "Poor", "Damaged"])
+        left_rail = st.selectbox("Left Rail Condition", ["Good", "Fair", "Poor", "Damaged"])
+        motor_cradle = st.selectbox("Motor Cradle Condition", ["Good", "Fair", "Poor", "Damaged"])
+        lower_core_support = st.selectbox("Lower Core Support Condition", ["Good", "Fair", "Poor", "Damaged"])
+        upper_core_support = st.selectbox("Upper Core Support Condition", ["Good", "Fair", "Poor", "Damaged"])
+        right_strut_tower = st.selectbox("Right Strut Tower Condition", ["Good", "Fair", "Poor", "Damaged"])
+        left_strut_tower = st.selectbox("Left Strut Tower Condition", ["Good", "Fair", "Poor", "Damaged"])
+        firewall_condition = st.selectbox("Firewall Condition", ["Good", "Fair", "Poor", "Damaged"])
+        floor_plan_condition = st.selectbox("Floor Plan Condition", ["Good", "Fair", "Poor", "Damaged"])
+
+        # ----- BODY SEALS -----
+        bonnet_seal = st.selectbox("Bonnet Seal Condition", ["Good", "Fair", "Poor", "Missing"])
+        trunk_seal = st.selectbox("Trunk Seal Condition", ["Good", "Fair", "Poor", "Missing"])
+        trunk_carpet = st.selectbox("Trunk Carpet Condition", ["Clean", "Dirty", "Damaged", "Missing"])
+
+        # ----- DOORS & HANDLES -----
+        front_left_door_handle = st.selectbox("Front Left Door Handle Condition", ["Good", "Loose", "Broken", "Missing"])
+        front_right_door_handle = st.selectbox("Front Right Door Handle Condition", ["Good", "Loose", "Broken", "Missing"])
+        back_left_door_hinges = st.selectbox("Back Left Door Hinges Condition", ["Good", "Loose", "Damaged", "Rusty"])
+        back_right_door_hinges = st.selectbox("Back Right Door Hinges Condition", ["Good", "Loose", "Damaged", "Rusty"])
+
+        # ----- SUNROOF -----
+        has_sunroof = st.selectbox("Has Sunroof?", ["Yes", "No"])
+        sunroof_condition = st.selectbox("Sunroof Condition", ["Good", "Leaking", "Stuck", "Cracked"]) if has_sunroof == "Yes" else "N/A"
+
+        # ----- FENDERS & UNDERBODY -----
+        front_right_fender_shield = st.selectbox("Front Right Fender Shield Condition", ["Good", "Loose", "Broken", "Missing"])
+        front_left_fender_shield = st.selectbox("Front Left Fender Shield Condition", ["Good", "Loose", "Broken", "Missing"])
+        back_right_fender_shield = st.selectbox("Back Right Fender Shield Condition", ["Good", "Loose", "Broken", "Missing"])
+        back_left_fender_shield = st.selectbox("Back Left Fender Shield Condition", ["Good", "Loose", "Broken", "Missing"])
+        back_under_body = st.selectbox("Back Under Body Condition", ["Good", "Rusty", "Damaged", "Dirty"])
+        rear_support = st.selectbox("Rear Support Condition", ["Good", "Fair", "Poor", "Damaged"])
+
+        # ----- MISC EXTERIOR -----
+        has_fuel_cap = st.selectbox("Has Fuel Cap?", ["Yes", "No"])
+        left_side_mirror = st.selectbox("Left Side Mirror Condition", ["Good", "Scratched", "Cracked", "Missing"])
 
         # --- Mechanical ---
     with st.expander("Mechanical", expanded=False):
@@ -752,7 +795,6 @@ with tab1:
 # ===============================
 # --- Collect Car Body Data ---
 # ===============================
-
 # 1️⃣  Create a dictionary for all panel conditions
         car_body_panels = {
             "Front Bumper": st.session_state.body_front_bumper,
@@ -813,7 +855,38 @@ with tab1:
             "overall_interior_condition": st.session_state.body_interior_condition,
             "comments": st.session_state.body_comments,
         }
-    
+        exterior_data = {
+            "frame_type": frame_type,
+            "front_right_rail": front_right_rail,
+            "front_left_rail": front_left_rail,
+            "left_rail": left_rail,
+            "motor_cradle": motor_cradle,
+            "lower_core_support": lower_core_support,
+            "upper_core_support": upper_core_support,
+            "right_strut_tower": right_strut_tower,
+            "left_strut_tower": left_strut_tower,
+            "firewall_condition": firewall_condition,
+            "floor_plan_condition": floor_plan_condition,
+            "bonnet_seal": bonnet_seal,
+            "trunk_seal": trunk_seal,
+            "trunk_carpet": trunk_carpet,
+            "front_left_door_handle": front_left_door_handle,
+            "front_right_door_handle": front_right_door_handle,
+            "back_left_door_hinges": back_left_door_hinges,
+            "back_right_door_hinges": back_right_door_hinges,
+            "has_sunroof": has_sunroof,
+            "sunroof_condition": sunroof_condition,
+            "front_right_fender_shield": front_right_fender_shield,
+            "front_left_fender_shield": front_left_fender_shield,
+            "back_right_fender_shield": back_right_fender_shield,
+            "back_left_fender_shield": back_left_fender_shield,
+            "back_under_body": back_under_body,
+            "rear_support": rear_support,
+            "has_fuel_cap": has_fuel_cap,
+            "left_side_mirror": left_side_mirror,
+        }
+
+
         # --- 6. Mechanical ---
         mechanical = {
             "engine_condition": engine_condition,
@@ -1069,6 +1142,7 @@ with tab1:
         documents_completion = calculate_condition_score(documents)
         interior_completion = calculate_condition_score(interior, exclude_fields=["interior_comments"])
         car_body_completion = calculate_condition_score(car_body.get("panels", {}))
+        exterior_completion = calculate_condition_score(exterior_data)
         mechanical_completion = calculate_condition_score(mechanical, exclude_fields=["mechanical_comments"])
         
         # handle suspension (both parts merged)
@@ -1092,6 +1166,7 @@ with tab1:
             "documents": documents_completion,
             "interior": interior_completion,
             "car_body": car_body_completion,
+            "exterior": exterior_completion,   
             "mechanical": mechanical_completion,
             "suspension": suspension_completion,
             "electrical": electrical_completion,
@@ -1172,7 +1247,9 @@ with tab1:
             documents=documents,
             interior=interior,
             car_body=car_body,
-            car_body_panels=structured_car_body_panels,   # ✅ Updated
+            car_body_panels=structured_car_body_panels,
+            exterior_condition=exterior_condition,
+            exterior=exterior_data,   # ✅ Updated
             mechanical=mechanical,
             suspension=suspension,
             suspension_parts={

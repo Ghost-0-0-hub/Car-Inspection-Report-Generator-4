@@ -387,6 +387,49 @@
 {% endset %}
 {{ accordion('Car Body Evaluation', car_body_content, completion.car_body) }}
 
+<!-- Exterior -->
+{% set exterior_content %}
+<table>
+  <tr><th>Field</th><th>Condition / Status</th></tr>
+  <tr><td class="field-label">Frame Type</td><td>{{ exterior.frame_type }}</td></tr>
+  <tr><td class="field-label">Front Right Rail Condition</td><td>{{ exterior.front_right_rail }}</td></tr>
+  <tr><td class="field-label">Front Left Rail Condition</td><td>{{ exterior.front_left_rail }}</td></tr>
+  <tr><td class="field-label">Left Rail Condition</td><td>{{ exterior.left_rail }}</td></tr>
+  <tr><td class="field-label">Motor Cradle Condition</td><td>{{ exterior.motor_cradle }}</td></tr>
+  <tr><td class="field-label">Lower Core Support Condition</td><td>{{ exterior.lower_core_support }}</td></tr>
+  <tr><td class="field-label">Upper Core Support Condition</td><td>{{ exterior.upper_core_support }}</td></tr>
+  <tr><td class="field-label">Right Strut Tower Condition</td><td>{{ exterior.right_strut_tower }}</td></tr>
+  <tr><td class="field-label">Left Strut Tower Condition</td><td>{{ exterior.left_strut_tower }}</td></tr>
+  <tr><td class="field-label">Firewall Condition</td><td>{{ exterior.firewall_condition }}</td></tr>
+  <tr><td class="field-label">Floor Plan Condition</td><td>{{ exterior.floor_plan_condition }}</td></tr>
+  <tr><td class="field-label">Bonnet Seal Condition</td><td>{{ exterior.bonnet_seal }}</td></tr>
+  <tr><td class="field-label">Trunk Seal Condition</td><td>{{ exterior.trunk_seal }}</td></tr>
+  <tr><td class="field-label">Trunk Carpet Condition</td><td>{{ exterior.trunk_carpet }}</td></tr>
+  <tr><td class="field-label">Front Left Door Handle Condition</td><td>{{ exterior.front_left_door_handle }}</td></tr>
+  <tr><td class="field-label">Front Right Door Handle Condition</td><td>{{ exterior.front_right_door_handle }}</td></tr>
+  <tr><td class="field-label">Back Left Door Hinges Condition</td><td>{{ exterior.back_left_door_hinges }}</td></tr>
+  <tr><td class="field-label">Back Right Door Hinges Condition</td><td>{{ exterior.back_right_door_hinges }}</td></tr>
+  <tr><td class="field-label">Has Sunroof</td><td>{{ exterior.has_sunroof }}</td></tr>
+  {% if exterior.has_sunroof == "Yes" %}
+  <tr><td class="field-label">Sunroof Condition</td><td>{{ exterior.sunroof_condition }}</td></tr>
+  {% endif %}
+  <tr><td class="field-label">Front Right Fender Shield Condition</td><td>{{ exterior.front_right_fender_shield }}</td></tr>
+  <tr><td class="field-label">Front Left Fender Shield Condition</td><td>{{ exterior.front_left_fender_shield }}</td></tr>
+  <tr><td class="field-label">Back Right Fender Shield Condition</td><td>{{ exterior.back_right_fender_shield }}</td></tr>
+  <tr><td class="field-label">Back Left Fender Shield Condition</td><td>{{ exterior.back_left_fender_shield }}</td></tr>
+  <tr><td class="field-label">Back Under Body Condition</td><td>{{ exterior.back_under_body }}</td></tr>
+  <tr><td class="field-label">Rear Support Condition</td><td>{{ exterior.rear_support }}</td></tr>
+  <tr><td class="field-label">Has Fuel Cap</td><td>{{ exterior.has_fuel_cap }}</td></tr>
+  <tr><td class="field-label">Left Side Mirror Condition</td><td>{{ exterior.left_side_mirror }}</td></tr>
+</table>
+
+{% if exterior.exterior_comments %}
+<div class="comments"><strong>Comments:</strong> {{ exterior.exterior_comments }}</div>
+{% endif %}
+
+{% endset %}
+
+{{ accordion('Exterior', exterior_content, completion.exterior) }}
 
 <!-- Mechanical -->
 {% set mechanical_content %}

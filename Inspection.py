@@ -528,7 +528,7 @@ with tab1:
             "Upload Body Evaluation Images", accept_multiple_files=True, type=["jpg", "png"], key="body_images"
         )
 
-        front_bumper = st.selectbox("Front Bumper Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"] key="body_front_bumper")
+        front_bumper = st.selectbox("Front Bumper Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_front_bumper")
         st.text_area("Front Bumper Comments", key="body_front_bumper_comment")
 
         bonnet = st.selectbox("Bonnet Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_bonnet")

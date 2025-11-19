@@ -105,13 +105,12 @@ with tab2:
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }}
         .legend-color {{
-            width: 14px;  /* smaller size */
-            height: 14px; /* smaller size */
+            width: 14px;
+            height: 14px;
             border-radius: 4px;
             margin-right: 8px;
             border: 1px solid #000;
         }}
-        /* 🔹 Mobile responsiveness */
         @media (max-width: 768px) {{
             #carCanvas {{
                 width: 95vw !important;
@@ -125,15 +124,14 @@ with tab2:
                 padding: 4px 8px;
             }}
             .legend-color {{
-                width: 10px;   /* smaller on mobile */
-                height: 10x;  /* smaller on mobile */
+                width: 10px;
+                height: 10px;
             }}
             #downloadBtn {{
                 font-size: 14px;
                 padding: 10px 18px;
             }}    
         }}
-
     </style>
 
     <div style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
@@ -210,7 +208,7 @@ with tab2:
         "F2": "#616161"
     }};
 
-    // Build legend dynamically
+    // Build HTML legend dynamically for live view
     Object.keys(damages).forEach(code => {{
         const item = document.createElement('div');
         item.className = 'legend-item';
@@ -226,7 +224,6 @@ with tab2:
         drawAll();
     }};
 
-    // 🔹 Responsive resizing
     window.addEventListener('resize', () => {{
         resizeCanvas();
         drawAll();
@@ -237,36 +234,24 @@ with tab2:
         const scale = Math.min(maxWidth / img.naturalWidth, 1);
         const dpr = window.devicePixelRatio || 1;
 
-        // Set canvas display size in CSS pixels
         canvas.style.width = img.naturalWidth * scale + "px";
         canvas.style.height = img.naturalHeight * scale + "px";
-
-        // Set internal resolution in device pixels
         canvas.width = img.naturalWidth * scale * dpr;
         canvas.height = img.naturalHeight * scale * dpr;
-
-        // Scale the context so 1 unit = 1 CSS pixel
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }}
 
     function drawAll() {{
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Draw the image to fill the canvas visually
         ctx.drawImage(img, 0, 0, canvas.width / (window.devicePixelRatio || 1), canvas.height / (window.devicePixelRatio || 1));
-
-        // Draw all annotations
         annotations.forEach(a => {{
             drawAnnotation(a);
         }});
     }}
 
-
     function drawAnnotation(a) {{
         let padding = 6;
         let fontSize = 14;
-
-        // Make it smaller on mobile
         if (window.innerWidth <= 768) {{
             padding = 2;
             fontSize = 10;
@@ -277,7 +262,7 @@ with tab2:
         ctx.textBaseline = 'middle';
         const textWidth = ctx.measureText(a.code).width;
         const rectWidth = textWidth + padding * 2;
-        const rectHeight = fontSize + padding;  // adjust height based on font size
+        const rectHeight = fontSize + padding;
         const bx = a.x - rectWidth / 2;
         const by = a.y - rectHeight / 2;
         const bg = colors[a.code] || "#ff6666";
@@ -290,10 +275,9 @@ with tab2:
         ctx.fillText(a.code, a.x, a.y);
     }}
 
-
     function getCanvasCoordinates(e) {{
         const rect = canvas.getBoundingClientRect();
-        const dpr = window.devicePixelRatio || 1;  // get devicePixelRatio
+        const dpr = window.devicePixelRatio || 1;
         let clientX, clientY;
         if (e.touches) {{
             clientX = e.touches[0].clientX;
@@ -302,13 +286,10 @@ with tab2:
             clientX = e.clientX;
             clientY = e.clientY;
         }}
-
-        // Correct scaling with devicePixelRatio
         const x = (clientX - rect.left) * (canvas.width / (rect.width * dpr));
         const y = (clientY - rect.top) * (canvas.height / (rect.height * dpr));
         return {{x, y}};
     }}
-
 
     function showDropdown(x, y, clientX, clientY) {{
         damageSelect.style.left = clientX + 'px';
@@ -332,13 +313,11 @@ with tab2:
         const coords = getCanvasCoordinates(e);
         showDropdown(coords.x, coords.y, e.clientX, e.clientY);
     }});
-
     canvas.addEventListener('touchstart', (e) => {{
         e.preventDefault();
         const coords = getCanvasCoordinates(e);
         showDropdown(coords.x, coords.y, e.touches[0].clientX, e.touches[0].clientY);
     }});
-
     damageSelect.addEventListener('change', (e) => {{
         const code = e.target.value;
         if(!code) return;
@@ -348,16 +327,78 @@ with tab2:
         damageSelect.value='';
     }});
 
+    // ✅ Download with codes in corners
     downloadBtn.addEventListener('click', () => {{
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+    
+        // Draw original canvas
+        tempCtx.drawImage(canvas, 0, 0);
+    
+        const boxSize = 14;
+        const padding = 6;
+        const fontSize = 12;
+        tempCtx.font = `bold ${{fontSize}}px Arial`;
+        tempCtx.textBaseline = 'top';
+    
+        const damageKeys = Object.keys(damages);
+    
+        // Helper to draw a group of codes
+        function drawGroup(codes, startX, startY) {{
+            let x = startX;
+            let y = startY;
+            codes.forEach(code => {{
+                const text = `${{code}} - ${{damages[code]}}`;
+                const textWidth = tempCtx.measureText(text).width;
+    
+                tempCtx.fillStyle = colors[code] || '#000';
+                tempCtx.fillRect(x, y, boxSize, boxSize);
+                tempCtx.strokeStyle = 'black';
+                tempCtx.strokeRect(x, y, boxSize, boxSize);
+    
+                tempCtx.fillStyle = 'black';
+                tempCtx.fillText(text, x + boxSize + 4, y);
+    
+                // Move y down for next item
+                y += boxSize + padding;
+            }});
+        }}
+    
+        // Split codes into 4 groups
+        const topLeft = damageKeys.slice(0, 3);
+        const topRight = damageKeys.slice(3, 6);
+        const bottomLeft = damageKeys.slice(6, 9);
+        const bottomRight = damageKeys.slice(9, 12);
+    
+        // Draw top-left
+        drawGroup(topLeft, 10, 10);
+    
+        // Draw top-right
+        let xStart = tempCanvas.width - 40 - 160; // 100px estimate for width
+        drawGroup(topRight, xStart, 10);
+    
+        // Draw bottom-left
+        let yStart = tempCanvas.height - 3*(boxSize + padding) - 10;
+        drawGroup(bottomLeft, 10, yStart);
+    
+        // Draw bottom-right
+        drawGroup(bottomRight, xStart, yStart);
+    
+        // Download
         const link = document.createElement('a');
         link.download = 'car_damage.png';
-        link.href = canvas.toDataURL();
+        link.href = tempCanvas.toDataURL();
         link.click();
     }});
+    
     </script>
+
     """
 
-    components.html(html_code, height=900)
+    components.html(html_code, height=950)
+
 
 
 
@@ -487,76 +528,76 @@ with tab1:
             "Upload Body Evaluation Images", accept_multiple_files=True, type=["jpg", "png"], key="body_images"
         )
 
-        front_bumper = st.selectbox("Front Bumper Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_front_bumper")
+        front_bumper = st.selectbox("Front Bumper Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_front_bumper")
         st.text_area("Front Bumper Comments", key="body_front_bumper_comment")
 
-        bonnet = st.selectbox("Bonnet Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_bonnet")
+        bonnet = st.selectbox("Bonnet Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_bonnet")
         st.text_area("Bonnet Comments", key="body_bonnet_comment")
 
-        front_windscreen = st.selectbox("Front Windscreen Condition", ["Original", "Cracked", "Replaced"], key="body_front_windscreen")
+        front_windscreen = st.selectbox("Front Windscreen Condition", ["Good", "Cracked", "Replaced"], key="body_front_windscreen")
         st.text_area("Front Windscreen Comments", key="body_front_windscreen_comment")
 
-        front_left_fender = st.selectbox("Front Left Fender Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_front_left_fender")
+        front_left_fender = st.selectbox("Front Left Fender Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_front_left_fender")
         st.text_area("Front Left Fender Comments", key="body_front_left_fender_comment")
 
-        left_a_pillar = st.selectbox("Left A-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_left_a_pillar")
+        left_a_pillar = st.selectbox("Left A-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_left_a_pillar")
         st.text_area("Left A-Pillar Comments", key="body_left_a_pillar_comment")
 
-        front_left_door = st.selectbox("Front Left Door Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_front_left_door")
+        front_left_door = st.selectbox("Front Left Door Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_front_left_door")
         st.text_area("Front Left Door Comments", key="body_front_left_door_comment")
 
-        roof = st.selectbox("Roof Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_roof")
+        roof = st.selectbox("Roof Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_roof")
         st.text_area("Roof Comments", key="body_roof_comment")
 
-        left_b_pillar = st.selectbox("Left B-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_left_b_pillar")
+        left_b_pillar = st.selectbox("Left B-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_left_b_pillar")
         st.text_area("Left B-Pillar Comments", key="body_left_b_pillar_comment")
 
-        back_left_door = st.selectbox("Back Left Door Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_back_left_door")
+        back_left_door = st.selectbox("Back Left Door Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_back_left_door")
         st.text_area("Back Left Door Comments", key="body_back_left_door_comment")
 
-        left_c_pillar = st.selectbox("Left C-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_left_c_pillar")
+        left_c_pillar = st.selectbox("Left C-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_left_c_pillar")
         st.text_area("Left C-Pillar Comments", key="body_left_c_pillar_comment")
 
-        left_d_pillar = st.selectbox("Left D-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_left_d_pillar")
+        left_d_pillar = st.selectbox("Left D-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_left_d_pillar")
         st.text_area("Left D-Pillar Comments", key="body_left_d_pillar_comment")
 
-        back_left_quarter_panel = st.selectbox("Back Left Quarter Panel Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_back_left_quarter")
+        back_left_quarter_panel = st.selectbox("Back Left Quarter Panel Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_back_left_quarter")
         st.text_area("Back Left Quarter Panel Comments", key="body_back_left_quarter_comment")
 
-        rear_bumper = st.selectbox("Rear Bumper Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_rear_bumper")
+        rear_bumper = st.selectbox("Rear Bumper Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_rear_bumper")
         st.text_area("Rear Bumper Comments", key="body_rear_bumper_comment")
 
-        trunk_lid = st.selectbox("Trunk Lid Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_trunk_lid")
+        trunk_lid = st.selectbox("Trunk Lid Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_trunk_lid")
         st.text_area("Trunk Lid Comments", key="body_trunk_lid_comment")
 
-        back_right_quarter_panel = st.selectbox("Back Right Quarter Panel Condition", ["Original", "Scratched", "Repaired", "Replaced"], key="body_back_right_quarter")
+        back_right_quarter_panel = st.selectbox("Back Right Quarter Panel Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_back_right_quarter")
         st.text_area("Back Right Quarter Panel Comments", key="body_back_right_quarter_comment")
 
-        rear_windscreen = st.selectbox("Rear Windscreen Condition", ["Original", "Cracked", "Replaced"], key="body_rear_windscreen")
+        rear_windscreen = st.selectbox("Rear Windscreen Condition", ["Good", "Cracked", "Replaced"], key="body_rear_windscreen")
         st.text_area("Rear Windscreen Comments", key="body_rear_windscreen_comment")
 
-        right_d_pillar = st.selectbox("Right D-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_right_d_pillar")
+        right_d_pillar = st.selectbox("Right D-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_right_d_pillar")
         st.text_area("Right D-Pillar Comments", key="body_right_d_pillar_comment")
 
-        right_c_pillar = st.selectbox("Right C-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_right_c_pillar")
+        right_c_pillar = st.selectbox("Right C-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_right_c_pillar")
         st.text_area("Right C-Pillar Comments", key="body_right_c_pillar_comment")
 
-        back_right_door = st.selectbox("Back Right Door Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_back_right_door")
+        back_right_door = st.selectbox("Back Right Door Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_back_right_door")
         st.text_area("Back Right Door Comments", key="body_back_right_door_comment")
 
-        right_b_pillar = st.selectbox("Right B-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_right_b_pillar")
+        right_b_pillar = st.selectbox("Right B-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_right_b_pillar")
         st.text_area("Right B-Pillar Comments", key="body_right_b_pillar_comment")
 
-        front_right_door = st.selectbox("Front Right Door Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_front_right_door")
+        front_right_door = st.selectbox("Front Right Door Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_front_right_door")
         st.text_area("Front Right Door Comments", key="body_front_right_door_comment")
 
-        right_a_pillar = st.selectbox("Right A-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_right_a_pillar")
+        right_a_pillar = st.selectbox("Right A-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_right_a_pillar")
         st.text_area("Right A-Pillar Comments", key="body_right_a_pillar_comment")
 
-        front_right_fender = st.selectbox("Front Right Fender Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_front_right_fender")
+        front_right_fender = st.selectbox("Front Right Fender Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_front_right_fender")
         st.text_area("Front Right Fender Comments", key="body_front_right_fender_comment")
 
-        exterior_condition = st.selectbox("Overall Exterior Condition", ["Excellent", "Original", "Average", "Poor"], key="body_exterior_condition")
+        exterior_condition = st.selectbox("Overall Exterior Condition", ["Excellent", "Good", "Average", "Poor"], key="body_exterior_condition")
         st.text_area("Overall Exterior Comments", key="body_exterior_comment")
 
         interior_condition = st.selectbox("Overall Interior Condition", ["Excellent", "Good", "Average", "Poor"], key="body_interior_condition")

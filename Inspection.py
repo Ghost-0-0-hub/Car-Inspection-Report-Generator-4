@@ -528,79 +528,79 @@ with tab1:
             "Upload Body Evaluation Images", accept_multiple_files=True, type=["jpg", "png"], key="body_images"
         )
 
-        front_bumper = st.selectbox("Front Bumper Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_front_bumper")
+        front_bumper = st.selectbox("Front Bumper Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"] key="body_front_bumper")
         st.text_area("Front Bumper Comments", key="body_front_bumper_comment")
 
-        bonnet = st.selectbox("Bonnet Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_bonnet")
+        bonnet = st.selectbox("Bonnet Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_bonnet")
         st.text_area("Bonnet Comments", key="body_bonnet_comment")
 
-        front_windscreen = st.selectbox("Front Windscreen Condition", ["Good", "Cracked", "Replaced"], key="body_front_windscreen")
+        front_windscreen = st.selectbox("Front Windscreen Condition", ["Original", "Cracked", "Replaced"], key="body_front_windscreen")
         st.text_area("Front Windscreen Comments", key="body_front_windscreen_comment")
 
-        front_left_fender = st.selectbox("Front Left Fender Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_front_left_fender")
+        front_left_fender = st.selectbox("Front Left Fender Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_front_left_fender")
         st.text_area("Front Left Fender Comments", key="body_front_left_fender_comment")
 
-        left_a_pillar = st.selectbox("Left A-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_left_a_pillar")
+        left_a_pillar = st.selectbox("Left A-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_left_a_pillar")
         st.text_area("Left A-Pillar Comments", key="body_left_a_pillar_comment")
 
-        front_left_door = st.selectbox("Front Left Door Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_front_left_door")
+        front_left_door = st.selectbox("Front Left Door Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_front_left_door")
         st.text_area("Front Left Door Comments", key="body_front_left_door_comment")
 
-        roof = st.selectbox("Roof Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_roof")
+        roof = st.selectbox("Roof Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_roof")
         st.text_area("Roof Comments", key="body_roof_comment")
 
-        left_b_pillar = st.selectbox("Left B-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_left_b_pillar")
+        left_b_pillar = st.selectbox("Left B-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_left_b_pillar")
         st.text_area("Left B-Pillar Comments", key="body_left_b_pillar_comment")
 
-        back_left_door = st.selectbox("Back Left Door Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_back_left_door")
+        back_left_door = st.selectbox("Back Left Door Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_back_left_door")
         st.text_area("Back Left Door Comments", key="body_back_left_door_comment")
 
-        left_c_pillar = st.selectbox("Left C-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_left_c_pillar")
+        left_c_pillar = st.selectbox("Left C-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_left_c_pillar")
         st.text_area("Left C-Pillar Comments", key="body_left_c_pillar_comment")
 
-        left_d_pillar = st.selectbox("Left D-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_left_d_pillar")
+        left_d_pillar = st.selectbox("Left D-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_left_d_pillar")
         st.text_area("Left D-Pillar Comments", key="body_left_d_pillar_comment")
 
-        back_left_quarter_panel = st.selectbox("Back Left Quarter Panel Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_back_left_quarter")
+        back_left_quarter_panel = st.selectbox("Back Left Quarter Panel Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_back_left_quarter")
         st.text_area("Back Left Quarter Panel Comments", key="body_back_left_quarter_comment")
 
-        rear_bumper = st.selectbox("Rear Bumper Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_rear_bumper")
+        rear_bumper = st.selectbox("Rear Bumper Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_rear_bumper")
         st.text_area("Rear Bumper Comments", key="body_rear_bumper_comment")
 
-        trunk_lid = st.selectbox("Trunk Lid Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_trunk_lid")
+        trunk_lid = st.selectbox("Trunk Lid Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_trunk_lid")
         st.text_area("Trunk Lid Comments", key="body_trunk_lid_comment")
 
-        back_right_quarter_panel = st.selectbox("Back Right Quarter Panel Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_back_right_quarter")
+        back_right_quarter_panel = st.selectbox("Back Right Quarter Panel Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_back_right_quarter")
         st.text_area("Back Right Quarter Panel Comments", key="body_back_right_quarter_comment")
 
-        rear_windscreen = st.selectbox("Rear Windscreen Condition", ["Good", "Cracked", "Replaced"], key="body_rear_windscreen")
+        rear_windscreen = st.selectbox("Rear Windscreen Condition", ["Original", "Cracked", "Replaced"], key="body_rear_windscreen")
         st.text_area("Rear Windscreen Comments", key="body_rear_windscreen_comment")
 
-        right_d_pillar = st.selectbox("Right D-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_right_d_pillar")
+        right_d_pillar = st.selectbox("Right D-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_right_d_pillar")
         st.text_area("Right D-Pillar Comments", key="body_right_d_pillar_comment")
 
-        right_c_pillar = st.selectbox("Right C-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_right_c_pillar")
+        right_c_pillar = st.selectbox("Right C-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_right_c_pillar")
         st.text_area("Right C-Pillar Comments", key="body_right_c_pillar_comment")
 
-        back_right_door = st.selectbox("Back Right Door Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_back_right_door")
+        back_right_door = st.selectbox("Back Right Door Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_back_right_door")
         st.text_area("Back Right Door Comments", key="body_back_right_door_comment")
 
-        right_b_pillar = st.selectbox("Right B-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_right_b_pillar")
+        right_b_pillar = st.selectbox("Right B-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_right_b_pillar")
         st.text_area("Right B-Pillar Comments", key="body_right_b_pillar_comment")
 
-        front_right_door = st.selectbox("Front Right Door Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_front_right_door")
+        front_right_door = st.selectbox("Front Right Door Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_front_right_door")
         st.text_area("Front Right Door Comments", key="body_front_right_door_comment")
 
-        right_a_pillar = st.selectbox("Right A-Pillar Condition", ["Good", "Damaged", "Repaired"], key="body_right_a_pillar")
+        right_a_pillar = st.selectbox("Right A-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_right_a_pillar")
         st.text_area("Right A-Pillar Comments", key="body_right_a_pillar_comment")
 
-        front_right_fender = st.selectbox("Front Right Fender Condition", ["Good", "Scratched", "Repaired", "Replaced"], key="body_front_right_fender")
+        front_right_fender = st.selectbox("Front Right Fender Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_front_right_fender")
         st.text_area("Front Right Fender Comments", key="body_front_right_fender_comment")
 
-        exterior_condition = st.selectbox("Overall Exterior Condition", ["Excellent", "Good", "Average", "Poor"], key="body_exterior_condition")
+        exterior_condition = st.selectbox("Overall Exterior Condition", ["Excellent", "Original", "Average", "Poor"], key="body_exterior_condition")
         st.text_area("Overall Exterior Comments", key="body_exterior_comment")
 
-        interior_condition = st.selectbox("Overall Interior Condition", ["Excellent", "Good", "Average", "Poor"], key="body_interior_condition")
+        interior_condition = st.selectbox("Overall Interior Condition", ["Excellent", "Original", "Average", "Poor"], key="body_interior_condition")
         st.text_area("Overall Interior Comments", key="body_interior_comment")
 
         car_body_comments = st.text_area("General Car Body Comments / Observations", key="body_comments")
@@ -611,73 +611,73 @@ with tab1:
 
         # ----- FRAME & STRUCTURE -----
         frame_type = st.selectbox("Frame Type", ["Unibody", "Body-on-Frame", "Other"])
-        front_right_rail = st.selectbox("Front Right Rail Condition", ["Good", "Fair", "Poor", "Damaged"])
-        front_left_rail = st.selectbox("Front Left Rail Condition", ["Good", "Fair", "Poor", "Damaged"])
-        left_rail = st.selectbox("Left Rail Condition", ["Good", "Fair", "Poor", "Damaged"])
-        motor_cradle = st.selectbox("Motor Cradle Condition", ["Good", "Fair", "Poor", "Damaged"])
-        lower_core_support = st.selectbox("Lower Core Support Condition", ["Good", "Fair", "Poor", "Damaged"])
-        upper_core_support = st.selectbox("Upper Core Support Condition", ["Good", "Fair", "Poor", "Damaged"])
-        right_strut_tower = st.selectbox("Right Strut Tower Condition", ["Good", "Fair", "Poor", "Damaged"])
-        left_strut_tower = st.selectbox("Left Strut Tower Condition", ["Good", "Fair", "Poor", "Damaged"])
-        firewall_condition = st.selectbox("Firewall Condition", ["Good", "Fair", "Poor", "Damaged"])
-        floor_plan_condition = st.selectbox("Floor Plan Condition", ["Good", "Fair", "Poor", "Damaged"])
+        front_right_rail = st.selectbox("Front Right Rail Condition", ["Original", "Fair", "Poor", "Damaged"])
+        front_left_rail = st.selectbox("Front Left Rail Condition", ["Original", "Fair", "Poor", "Damaged"])
+        left_rail = st.selectbox("Left Rail Condition", ["Original", "Fair", "Poor", "Damaged"])
+        motor_cradle = st.selectbox("Motor Cradle Condition", ["Original", "Fair", "Poor", "Damaged"])
+        lower_core_support = st.selectbox("Lower Core Support Condition", ["Original", "Fair", "Poor", "Damaged"])
+        upper_core_support = st.selectbox("Upper Core Support Condition", ["Original", "Fair", "Poor", "Damaged"])
+        right_strut_tower = st.selectbox("Right Strut Tower Condition", ["Original", "Fair", "Poor", "Damaged"])
+        left_strut_tower = st.selectbox("Left Strut Tower Condition", ["Original", "Fair", "Poor", "Damaged"])
+        firewall_condition = st.selectbox("Firewall Condition", ["Original", "Fair", "Poor", "Damaged"])
+        floor_plan_condition = st.selectbox("Floor Plan Condition", ["Original", "Fair", "Poor", "Damaged"])
 
         # ----- BODY SEALS -----
-        bonnet_seal = st.selectbox("Bonnet Seal Condition", ["Good", "Fair", "Poor", "Missing"])
-        trunk_seal = st.selectbox("Trunk Seal Condition", ["Good", "Fair", "Poor", "Missing"])
+        bonnet_seal = st.selectbox("Bonnet Seal Condition", ["Original", "Fair", "Poor", "Missing"])
+        trunk_seal = st.selectbox("Trunk Seal Condition", ["Original", "Fair", "Poor", "Missing"])
         trunk_carpet = st.selectbox("Trunk Carpet Condition", ["Clean", "Dirty", "Damaged", "Missing"])
 
         # ----- DOORS & HANDLES -----
-        front_left_door_handle = st.selectbox("Front Left Door Handle Condition", ["Good", "Loose", "Broken", "Missing"])
-        front_right_door_handle = st.selectbox("Front Right Door Handle Condition", ["Good", "Loose", "Broken", "Missing"])
-        back_left_door_hinges = st.selectbox("Back Left Door Hinges Condition", ["Good", "Loose", "Damaged", "Rusty"])
-        back_right_door_hinges = st.selectbox("Back Right Door Hinges Condition", ["Good", "Loose", "Damaged", "Rusty"])
+        front_left_door_handle = st.selectbox("Front Left Door Handle Condition", ["Original", "Loose", "Broken", "Missing"])
+        front_right_door_handle = st.selectbox("Front Right Door Handle Condition", ["Original", "Loose", "Broken", "Missing"])
+        back_left_door_hinges = st.selectbox("Back Left Door Hinges Condition", ["Original", "Loose", "Damaged", "Rusty"])
+        back_right_door_hinges = st.selectbox("Back Right Door Hinges Condition", ["Original", "Loose", "Damaged", "Rusty"])
 
         # ----- SUNROOF -----
         has_sunroof = st.selectbox("Has Sunroof?", ["Yes", "No"])
-        sunroof_condition = st.selectbox("Sunroof Condition", ["Good", "Leaking", "Stuck", "Cracked"]) if has_sunroof == "Yes" else "N/A"
+        sunroof_condition = st.selectbox("Sunroof Condition", ["Original", "Leaking", "Stuck", "Cracked"]) if has_sunroof == "Yes" else "N/A"
 
         # ----- FENDERS & UNDERBODY -----
-        front_right_fender_shield = st.selectbox("Front Right Fender Shield Condition", ["Good", "Loose", "Broken", "Missing"])
-        front_left_fender_shield = st.selectbox("Front Left Fender Shield Condition", ["Good", "Loose", "Broken", "Missing"])
-        back_right_fender_shield = st.selectbox("Back Right Fender Shield Condition", ["Good", "Loose", "Broken", "Missing"])
-        back_left_fender_shield = st.selectbox("Back Left Fender Shield Condition", ["Good", "Loose", "Broken", "Missing"])
-        back_under_body = st.selectbox("Back Under Body Condition", ["Good", "Rusty", "Damaged", "Dirty"])
-        rear_support = st.selectbox("Rear Support Condition", ["Good", "Fair", "Poor", "Damaged"])
+        front_right_fender_shield = st.selectbox("Front Right Fender Shield Condition", ["Original", "Loose", "Broken", "Missing"])
+        front_left_fender_shield = st.selectbox("Front Left Fender Shield Condition", ["Original", "Loose", "Broken", "Missing"])
+        back_right_fender_shield = st.selectbox("Back Right Fender Shield Condition", ["Original", "Loose", "Broken", "Missing"])
+        back_left_fender_shield = st.selectbox("Back Left Fender Shield Condition", ["Original", "Loose", "Broken", "Missing"])
+        back_under_body = st.selectbox("Back Under Body Condition", ["Original", "Rusty", "Damaged", "Dirty"])
+        rear_support = st.selectbox("Rear Support Condition", ["Original", "Fair", "Poor", "Damaged"])
 
         # ----- MISC EXTERIOR -----
         has_fuel_cap = st.selectbox("Has Fuel Cap?", ["Yes", "No"])
-        left_side_mirror = st.selectbox("Left Side Mirror Condition", ["Good", "Scratched", "Cracked", "Missing"])
+        left_side_mirror = st.selectbox("Left Side Mirror Condition", ["Original", "Scratched", "Cracked", "Missing"])
 
         # --- Mechanical ---
     with st.expander("Mechanical", expanded=False):
-        engine_condition = st.selectbox("Engine Condition", ["Good", "Average", "Weak"], key="mech_engine_condition")
+        engine_condition = st.selectbox("Engine Condition", ["Original", "Average", "Weak"], key="mech_engine_condition")
         transmission_function = st.selectbox("Transmission Function", ["Smooth", "Rough", "Needs Service"], key="mech_transmission_function")
-        clutch_condition = st.selectbox("Clutch Condition", ["Good", "Slipping", "Needs Replacement"], key="mech_clutch")
-        catalytic_converter = st.selectbox("Catalytic Converter Condition", ["Good", "Average", "Faulty"], key="mech_catalytic")
-        radiator_condition = st.selectbox("Radiator Condition", ["Good", "Average", "Leaking"], key="mech_radiator")
+        clutch_condition = st.selectbox("Clutch Condition", ["Original", "Slipping", "Needs Replacement"], key="mech_clutch")
+        catalytic_converter = st.selectbox("Catalytic Converter Condition", ["Original", "Average", "Faulty"], key="mech_catalytic")
+        radiator_condition = st.selectbox("Radiator Condition", ["Original", "Average", "Leaking"], key="mech_radiator")
         engine_noise = st.selectbox("Engine Noise", ["Normal", "Abnormal"], key="mech_engine_noise")
         inner_bonnet_condition = st.selectbox("Inner Bonnet Condition", ["Clean", "Oily", "Damaged"], key="mech_inner_bonnet")
-        battery_condition = st.selectbox("Battery Condition", ["Good", "Weak", "Dead"], key='mech_battery')
+        battery_condition = st.selectbox("Battery Condition", ["Original", "Weak", "Dead"], key='mech_battery')
         abs_present = st.selectbox("Has ABS (Anti-lock Braking System)?", ["Yes", "No"], key="mech_abs")
         exhaust_smoke = st.selectbox("Engine Smoke Condition", ["None", "White", "Black", "Blue"], key="mech_exhaust_smoke")
-        engine_oil_condition = st.selectbox("Engine Oil Condition", ["Good", "Dirty", "Low"], key="mech_oil")
+        engine_oil_condition = st.selectbox("Engine Oil Condition", ["Original", "Dirty", "Low"], key="mech_oil")
         mechanical_comments = st.text_area("Mechanical Comments", key="mech_comments")
     
     
     # --- Suspension ---
     with st.expander("Suspension", expanded=False):
-        front_left_shock = st.selectbox("Front Left Shock Absorber Condition", ["Good", "Weak", "Leaking"], key="susp_fl_shock")
-        front_right_shock = st.selectbox("Front Right Shock Absorber Condition", ["Good", "Weak", "Leaking"], key="susp_fr_shock")
-        back_left_shock = st.selectbox("Back Left Shock Absorber Condition", ["Good", "Weak", "Leaking"], key="susp_bl_shock")
-        back_right_shock = st.selectbox("Back Right Shock Absorber Condition", ["Good", "Weak", "Leaking"], key="susp_br_shock")
+        front_left_shock = st.selectbox("Front Left Shock Absorber Condition", ["Original", "Weak", "Leaking"], key="susp_fl_shock")
+        front_right_shock = st.selectbox("Front Right Shock Absorber Condition", ["Original", "Weak", "Leaking"], key="susp_fr_shock")
+        back_left_shock = st.selectbox("Back Left Shock Absorber Condition", ["Original", "Weak", "Leaking"], key="susp_bl_shock")
+        back_right_shock = st.selectbox("Back Right Shock Absorber Condition", ["Original", "Weak", "Leaking"], key="susp_br_shock")
     
-        front_left_axle = st.selectbox("Front Left Axle Condition", ["Good", "Worn", "Damaged"], key="susp_fl_axle")
-        front_right_axle = st.selectbox("Front Right Axle Condition", ["Good", "Worn", "Damaged"], key="susp_fr_axle")
-        back_left_axle = st.selectbox("Back Left Axle Condition", ["Good", "Worn", "Damaged"], key="susp_bl_axle")
-        back_right_axle = st.selectbox("Back Right Axle Condition", ["Good", "Worn", "Damaged"], key="susp_br_axle")
+        front_left_axle = st.selectbox("Front Left Axle Condition", ["Original", "Worn", "Damaged"], key="susp_fl_axle")
+        front_right_axle = st.selectbox("Front Right Axle Condition", ["Original", "Worn", "Damaged"], key="susp_fr_axle")
+        back_left_axle = st.selectbox("Back Left Axle Condition", ["Original", "Worn", "Damaged"], key="susp_bl_axle")
+        back_right_axle = st.selectbox("Back Right Axle Condition", ["Original", "Worn", "Damaged"], key="susp_br_axle")
     
-        steering_alignment = st.selectbox("Steering Alignment", ["Good", "Off", "Needs Work"], key="susp_steering_alignment")
+        steering_alignment = st.selectbox("Steering Alignment", ["Original", "Off", "Needs Work"], key="susp_steering_alignment")
         suspension_noise = st.selectbox("Suspension Noise", ["None", "Mild", "Severe"], key="susp_noise")
         suspension_comments = st.text_area("Suspension Comments", key="susp_comments")
     
@@ -690,8 +690,8 @@ with tab1:
         brake_lights = st.selectbox("Brake Lights", ["Working", "Faulty"], key="elec_brake_lights")
         power_windows = st.selectbox("Power Windows", ["Working", "Faulty"], key="elec_power_windows")
         central_locking = st.selectbox("Central Locking", ["Working", "Faulty"], key="elec_central_lock")
-        battery_elec = st.selectbox("Battery Condition", ["Good", "Weak", "Dead"], key='elec_battery')
-        wiring = st.selectbox("Wiring Condition", ["Good", "Average", "Poor"], key="elec_wiring")
+        battery_elec = st.selectbox("Battery Condition", ["Original", "Weak", "Dead"], key='elec_battery')
+        wiring = st.selectbox("Wiring Condition", ["Original", "Average", "Poor"], key="elec_wiring")
         electrical_comments = st.text_area("Electrical Comments", key="elec_comments")
 
     
@@ -725,9 +725,9 @@ with tab1:
     with st.expander("Test Drive", expanded=False):
         engine_function = st.selectbox("Engine Function", ["Normal", "Abnormal"], key="td_engine_function")
         transmission_condition = st.selectbox("Transmission Condition", ["Smooth", "Rough", "Needs Service"], key="td_transmission_condition")
-        brake_function = st.selectbox("Brake Function", ["Good", "Average", "Weak"], key="td_brake_function")
-        suspension_function = st.selectbox("Suspension Function", ["Good", "Average", "Weak"], key="td_suspension_function")
-        steering_function = st.selectbox("Steering Function", ["Good", "Loose", "Stiff"], key="td_steering_function")
+        brake_function = st.selectbox("Brake Function", ["Original", "Average", "Weak"], key="td_brake_function")
+        suspension_function = st.selectbox("Suspension Function", ["Original", "Average", "Weak"], key="td_suspension_function")
+        steering_function = st.selectbox("Steering Function", ["Original", "Loose", "Stiff"], key="td_steering_function")
     
         has_radio = st.selectbox("Has Radio?", ["Yes", "No"], key="td_radio")
         has_air_conditioning = st.selectbox("Has Air Conditioning?", ["Yes", "No"], key="td_ac")
@@ -735,7 +735,7 @@ with tab1:
         has_navigation = st.selectbox("Has Navigation System?", ["Yes", "No"], key="td_navigation")
         navigation_condition = st.selectbox("Navigation Condition", ["Working", "Not Working"], key="td_navigation_condition") if has_navigation=="Yes" else None
     
-        dashboard_instruments = st.selectbox("Dashboard Instruments Condition", ["Good", "Average", "Faulty"], key="td_dashboard_instruments")
+        dashboard_instruments = st.selectbox("Dashboard Instruments Condition", ["Original", "Average", "Faulty"], key="td_dashboard_instruments")
         interior_lights_td = st.selectbox("Interior Light Condition", ["Working", "Faulty"], key="td_interior_lights")
         test_drive_comments = st.text_area("Test Drive / Functional Comments", key="td_comments")
     
@@ -743,7 +743,7 @@ with tab1:
     # --- Final Comments ---
     with st.expander("Final Comments", expanded=False):
         inspector_name = st.text_input("Inspector Name", key="final_inspector_name")
-        overall_condition = st.selectbox("Overall Vehicle Condition", ["Excellent", "Good", "Average", "Poor"], key="final_overall_condition")
+        overall_condition = st.selectbox("Overall Vehicle Condition", ["Excellent", "Original", "Average", "Poor"], key="final_overall_condition")
         final_comments = st.text_area("Final Remarks / Notes", key="final_comments")
     
     # --- Inject CSS for green button ---
@@ -1031,7 +1031,7 @@ with tab1:
 
             Rules:
             - Presence-only fields (make/model/chassis/etc.) -> 100 if non-empty, else 0.
-            - Condition keywords (good/average/scratched/damaged/working/not working/yes/no etc.) -> mapped scores.
+            - Condition keywords (Original/average/scratched/damaged/working/not working/yes/no etc.) -> mapped scores.
             - Numeric values (ints/floats) -> treated as percent if in 0-100 range, otherwise normalized to [0,100] heuristically.
             - Nested dicts -> handled recursively (average of nested items).
             - Unknown strings -> neutral mid score (0.7 by default), but lowered from previous behavior to avoid skew.
@@ -1051,7 +1051,7 @@ with tab1:
             condition_map = {
                 "excellent": 1.0,
                 "like new": 1.0,
-                "good": 0.95,
+                "Original": 0.95,
                 "working": 0.95,
                 "yes": 1.0,
                 "ok": 0.8,
@@ -1230,7 +1230,7 @@ with tab1:
         else:
             overall_condition_percent = 0
         def calculate_condition_percent(section_dict):
-            score_map = {"Good": 100, "Average": 60, "Bad": 30, "Poor": 10, "N/A": 0, "": 0}
+            score_map = {"Original": 100, "Average": 60, "Bad": 30, "Poor": 10, "N/A": 0, "": 0}
             valid_values = [score_map.get(str(v).title(), 0) for v in section_dict.values() if isinstance(v, str)]
             if not valid_values:
                 return 0

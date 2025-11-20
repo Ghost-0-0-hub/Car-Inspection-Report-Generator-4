@@ -799,12 +799,15 @@ with tab1:
             "right_a_pillar_comment": st.session_state.body_right_a_pillar_comment,
             "front_right_fender_comment": st.session_state.body_front_right_fender_comment,
         }
-# 3️⃣  Combine everything into one structured object for Jinja
+        # 3️⃣  Combine everything into one structured object for Jinja
         car_body = {
             "overall_exterior_condition": st.session_state.body_exterior_condition,
             "overall_interior_condition": st.session_state.body_interior_condition,
             "comments": st.session_state.body_comments,
+            "panels": car_body_panels,       # <-- THIS WAS MISSING
+            "panel_comments": car_body_comments,  # <-- OPTIONAL but recommended
         }
+
         exterior_data = {
             "frame_type": frame_type,
             "front_right_rail": front_right_rail,

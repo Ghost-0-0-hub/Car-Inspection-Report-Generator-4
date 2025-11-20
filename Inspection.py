@@ -2,13 +2,12 @@ import streamlit as st
 import streamlit.components.v1 as components
 import base64
 import os
+import re
 from jinja2 import Template
 from datetime import datetime
-
 # --- Login Credentials ---
 USERNAME = "carobar"
 PASSWORD = "Carobar007"
-
 # --- Initialize login state ---
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
@@ -35,7 +34,6 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
-
 # --- Login function ---
 def login():
     st.title("🔒 Login Required")
@@ -52,31 +50,18 @@ def login():
 if not st.session_state["logged_in"]:
     login()
     st.stop()
-
-# ================================
-# --- CONFIGURATION ---
-# ================================
 st.set_page_config(page_title="🚘 Car Inspection Form", layout="wide")
 
 # --- Directories & Templates ---
 REPORTS_DIR = "reports"
 TEMPLATE_PATH = "templates/report_template.html"
 os.makedirs(REPORTS_DIR, exist_ok=True)
-
-# ================================
-# --- TABS ---
-# ================================
 tab1, tab2 = st.tabs(["Inspection Form", "Damage Diagram"])
-# ================================
-# --- DAMAGE DIAGRAM TAB ---
-# ================================
 with tab2:
     st.title("Car Damage Diagram")
-
     with open("CarDamage.jpg", "rb") as f:
         img_bytes = f.read()
         img_base64 = base64.b64encode(img_bytes).decode()
-
     html_code = f"""
     <style>
         body {{
@@ -392,19 +377,9 @@ with tab2:
         link.href = tempCanvas.toDataURL();
         link.click();
     }});
-    
     </script>
-
     """
-
     components.html(html_code, height=950)
-
-
-
-
-    # ================================
-# --- INSPECTION FORM TAB ---
-# ================================
 with open("CompanyLogo.jpg", "rb") as f:
     logo_bytes = f.read()
     logo_base64 = base64.b64encode(logo_bytes).decode()
@@ -419,10 +394,6 @@ with tab1:
     </div>
     <h3 style="margin-top:0;">🧾 Fill the Vehicle Inspection Form</h3>
     """, unsafe_allow_html=True)
-
-    # ========================
-    # --- Highlights ---
-    # ========================
     with st.expander("Highlights", expanded=False):
         st.write("Upload showcase images of the car (front, rear, side, interior, engine bay)")
         highlight_images = st.file_uploader(
@@ -445,10 +416,6 @@ with tab1:
             bytes_data = img_file.read()
             encoded = base64.b64encode(bytes_data).decode()
             highlight_images_b64.append(f"data:{img_file.type};base64,{encoded}")
-
-    # ========================
-    # --- Car Details ---
-    # ========================
     with st.expander("Car Details", expanded=False):
         col1, col2 = st.columns(2)
         with col1:
@@ -463,32 +430,21 @@ with tab1:
             color_code = st.text_input("Color Code (if available)", key="car_color_code")
             chassis_number = st.text_input("Chassis Number", key="car_chassis_number")
             engine_number = st.text_input("Engine Number", key="car_engine_number")
-
-    # ========================
-    # --- Documents ---
-    # ========================
     with st.expander("Documents", expanded=False):
         original_book = st.selectbox("Original Book", ["Yes", "No"], key="doc_original_book")
         original_card = st.selectbox("Original Card", ["Yes", "No"], key="doc_original_card")
         original_file = st.selectbox("Original File", ["Yes", "No"], key="doc_original_file")
         number_plate_condition = st.selectbox("Number Plate Condition", ["Original", "Not Original"], key="doc_number_plate")
-    
-        # Updated fields
         no_of_owners = st.selectbox(
             "Number of Previous Owners",
             ["Not Confirmed", "0", "1", "2", "3", "4", "5+"],
             key="doc_no_of_owners"
         )
-    
         no_of_keys = st.selectbox(
             "Number of Keys",
             ["Not Confirmed", "0", "1", "2", "3", "4+"],
             key="doc_no_of_keys"
         )
-    
-    # ========================
-    # --- Interior ---
-    # ========================
     with st.expander("Interior", expanded=False):
 
         # Air Conditioning
@@ -518,95 +474,62 @@ with tab1:
         # General Comments
         interior_comments = st.text_area("Interior Comments", key="int_comments")
 
-
-    # ========================
-    # --- Car Body Evaluation ---
-    # ========================
     with st.expander("Car Body Evaluation", expanded=False):
         st.write("Upload photos of body evaluation or diagrams")
         body_images = st.file_uploader(
             "Upload Body Evaluation Images", accept_multiple_files=True, type=["jpg", "png"], key="body_images"
         )
-
         front_bumper = st.selectbox("Front Bumper Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_front_bumper")
         st.text_area("Front Bumper Comments", key="body_front_bumper_comment")
-
         bonnet = st.selectbox("Bonnet Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_bonnet")
         st.text_area("Bonnet Comments", key="body_bonnet_comment")
-
         front_windscreen = st.selectbox("Front Windscreen Condition", ["Original", "Cracked", "Replaced"], key="body_front_windscreen")
         st.text_area("Front Windscreen Comments", key="body_front_windscreen_comment")
-
         front_left_fender = st.selectbox("Front Left Fender Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_front_left_fender")
         st.text_area("Front Left Fender Comments", key="body_front_left_fender_comment")
-
         left_a_pillar = st.selectbox("Left A-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_left_a_pillar")
         st.text_area("Left A-Pillar Comments", key="body_left_a_pillar_comment")
-
         front_left_door = st.selectbox("Front Left Door Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_front_left_door")
         st.text_area("Front Left Door Comments", key="body_front_left_door_comment")
-
         roof = st.selectbox("Roof Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_roof")
         st.text_area("Roof Comments", key="body_roof_comment")
-
         left_b_pillar = st.selectbox("Left B-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_left_b_pillar")
         st.text_area("Left B-Pillar Comments", key="body_left_b_pillar_comment")
-
         back_left_door = st.selectbox("Back Left Door Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_back_left_door")
         st.text_area("Back Left Door Comments", key="body_back_left_door_comment")
-
         left_c_pillar = st.selectbox("Left C-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_left_c_pillar")
         st.text_area("Left C-Pillar Comments", key="body_left_c_pillar_comment")
-
         left_d_pillar = st.selectbox("Left D-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_left_d_pillar")
         st.text_area("Left D-Pillar Comments", key="body_left_d_pillar_comment")
-
         back_left_quarter_panel = st.selectbox("Back Left Quarter Panel Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_back_left_quarter")
         st.text_area("Back Left Quarter Panel Comments", key="body_back_left_quarter_comment")
-
         rear_bumper = st.selectbox("Rear Bumper Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_rear_bumper")
         st.text_area("Rear Bumper Comments", key="body_rear_bumper_comment")
-
         trunk_lid = st.selectbox("Trunk Lid Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_trunk_lid")
         st.text_area("Trunk Lid Comments", key="body_trunk_lid_comment")
-
         back_right_quarter_panel = st.selectbox("Back Right Quarter Panel Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_back_right_quarter")
         st.text_area("Back Right Quarter Panel Comments", key="body_back_right_quarter_comment")
-
         rear_windscreen = st.selectbox("Rear Windscreen Condition", ["Original", "Cracked", "Replaced"], key="body_rear_windscreen")
         st.text_area("Rear Windscreen Comments", key="body_rear_windscreen_comment")
-
         right_d_pillar = st.selectbox("Right D-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_right_d_pillar")
         st.text_area("Right D-Pillar Comments", key="body_right_d_pillar_comment")
-
         right_c_pillar = st.selectbox("Right C-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_right_c_pillar")
         st.text_area("Right C-Pillar Comments", key="body_right_c_pillar_comment")
-
         back_right_door = st.selectbox("Back Right Door Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_back_right_door")
         st.text_area("Back Right Door Comments", key="body_back_right_door_comment")
-
         right_b_pillar = st.selectbox("Right B-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_right_b_pillar")
         st.text_area("Right B-Pillar Comments", key="body_right_b_pillar_comment")
-
         front_right_door = st.selectbox("Front Right Door Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_front_right_door")
         st.text_area("Front Right Door Comments", key="body_front_right_door_comment")
-
         right_a_pillar = st.selectbox("Right A-Pillar Condition", ["Original", "Damaged", "Repaired"], key="body_right_a_pillar")
         st.text_area("Right A-Pillar Comments", key="body_right_a_pillar_comment")
-
         front_right_fender = st.selectbox("Front Right Fender Condition", ["Total Original", "Repainted Only", "Repaired with poligated", "Repaired with dry dent"], key="body_front_right_fender")
         st.text_area("Front Right Fender Comments", key="body_front_right_fender_comment")
-
         exterior_condition = st.selectbox("Overall Exterior Condition", ["Excellent", "Original", "Average", "Poor"], key="body_exterior_condition")
         st.text_area("Overall Exterior Comments", key="body_exterior_comment")
-
         interior_condition = st.selectbox("Overall Interior Condition", ["Excellent", "Original", "Average", "Poor"], key="body_interior_condition")
         st.text_area("Overall Interior Comments", key="body_interior_comment")
-
         car_body_comments = st.text_area("General Car Body Comments / Observations", key="body_comments")
-
-        import streamlit as st
-
     with st.expander('Exterior',expanded=False):
 
         # ----- FRAME & STRUCTURE -----
@@ -663,8 +586,6 @@ with tab1:
         exhaust_smoke = st.selectbox("Engine Smoke Condition", ["None", "White", "Black", "Blue"], key="mech_exhaust_smoke")
         engine_oil_condition = st.selectbox("Engine Oil Condition", ["Original", "Dirty", "Low"], key="mech_oil")
         mechanical_comments = st.text_area("Mechanical Comments", key="mech_comments")
-    
-    
     # --- Suspension ---
     with st.expander("Suspension", expanded=False):
         front_left_shock = st.selectbox("Front Left Shock Absorber Condition", ["Original", "Weak", "Leaking"], key="susp_fl_shock")
@@ -681,7 +602,6 @@ with tab1:
         suspension_noise = st.selectbox("Suspension Noise", ["None", "Mild", "Severe"], key="susp_noise")
         suspension_comments = st.text_area("Suspension Comments", key="susp_comments")
     
-    
     # --- Electrical ---
     with st.expander("Electrical", expanded=False):
         headlights = st.selectbox("Headlights Condition", ["Working", "Faulty", "Scratched"], key="elec_headlights")
@@ -693,9 +613,6 @@ with tab1:
         battery_elec = st.selectbox("Battery Condition", ["Original", "Weak", "Dead"], key='elec_battery')
         wiring = st.selectbox("Wiring Condition", ["Original", "Average", "Poor"], key="elec_wiring")
         electrical_comments = st.text_area("Electrical Comments", key="elec_comments")
-
-    
-    
     # --- Tires ---
     with st.expander("Tires", expanded=False):
         col1, col2, col3, col4 = st.columns(4)
@@ -719,8 +636,7 @@ with tab1:
         has_tool_kit = st.selectbox("Has Tool Kit?", ["Yes", "No"], key="acc_tool_kit")
         has_puncture_kit = st.selectbox("Has Puncture Kit?", ["Yes", "No"], key="acc_puncture_kit")
         has_spare_wheel = st.selectbox("Has Spare Wheel?", ["Yes", "No"], key="acc_spare_wheel")
-    
-    
+
     # --- Test Drive ---
     with st.expander("Test Drive", expanded=False):
         engine_function = st.selectbox("Engine Function", ["Normal", "Abnormal"], key="td_engine_function")
@@ -738,7 +654,6 @@ with tab1:
         dashboard_instruments = st.selectbox("Dashboard Instruments Condition", ["Original", "Average", "Faulty"], key="td_dashboard_instruments")
         interior_lights_td = st.selectbox("Interior Light Condition", ["Working", "Faulty"], key="td_interior_lights")
         test_drive_comments = st.text_area("Test Drive / Functional Comments", key="td_comments")
-    
     
     # --- Final Comments ---
     with st.expander("Final Comments", expanded=False):
@@ -832,11 +747,6 @@ with tab1:
             "interior_comments": interior_comments
         }
         
-        # --- 5. Car Body Evaluation ---
-# ===============================
-# --- Collect Car Body Data ---
-# ===============================
-# 1️⃣  Create a dictionary for all panel conditions
         car_body_panels = {
             "Front Bumper": st.session_state.body_front_bumper,
             "Bonnet": st.session_state.body_bonnet,
@@ -889,7 +799,6 @@ with tab1:
             "right_a_pillar_comment": st.session_state.body_right_a_pillar_comment,
             "front_right_fender_comment": st.session_state.body_front_right_fender_comment,
         }
-
 # 3️⃣  Combine everything into one structured object for Jinja
         car_body = {
             "overall_exterior_condition": st.session_state.body_exterior_condition,
@@ -926,8 +835,6 @@ with tab1:
             "has_fuel_cap": has_fuel_cap,
             "left_side_mirror": left_side_mirror,
         }
-
-
         # --- 6. Mechanical ---
         mechanical = {
             "engine_condition": engine_condition,
@@ -943,7 +850,6 @@ with tab1:
             "engine_oil_condition": engine_oil_condition,
             "mechanical_comments": mechanical_comments
         }
-    
         # --- 7. Suspension ---
         suspension = {
             "shock_absorbers": {
@@ -962,7 +868,6 @@ with tab1:
             "suspension_noise": suspension_noise,
             "suspension_comments": suspension_comments
         }
-    
         # --- 8. Electrical ---
         electrical = {
             "headlights": headlights,
@@ -975,7 +880,6 @@ with tab1:
             "wiring": wiring,
             "electrical_comments": electrical_comments
         }
-    
         # --- 9. Tires ---
         tires = {
             "front_left": tire_fl,
@@ -999,7 +903,6 @@ with tab1:
             "puncture_kit": has_puncture_kit,
             "spare_wheel": has_spare_wheel
         }
-    
         # --- 11. Test Drive ---
         test_drive = {
             "engine_function": engine_function,
@@ -1016,8 +919,6 @@ with tab1:
             "interior_light_condition": interior_lights_td,
             "comments": test_drive_comments
         }
-    
-        # --- 12. Final Comments ---
         final = {
             "inspector_name": inspector_name,
             "overall_condition": overall_condition,
@@ -1036,18 +937,13 @@ with tab1:
             - Nested dicts -> handled recursively (average of nested items).
             - Unknown strings -> neutral mid score (0.7 by default), but lowered from previous behavior to avoid skew.
             """
-
             if exclude_fields is None:
                 exclude_fields = []
-
-            # Fields that are identity / presence-only (not conditions)
             PRESENCE_ONLY = {
                 "make", "model", "variant", "model_year", "reg_year", "registration_city",
                 "registration_type", "chassis_number", "engine_number", "color_code",
                 "reference_id", "pickup_location", "inspector_name"
             }
-
-            # Mapping for condition-like words -> score between 0 and 1
             condition_map = {
                 "excellent": 1.0,
                 "like new": 1.0,
@@ -1079,14 +975,10 @@ with tab1:
                 "n/a": 0.0,
                 "na": 0.0
             }
-
-            # Helper to score a single value
             def score_value(key, value):
                 # exclude explicit fields
                 if key in exclude_fields:
                     return None
-
-                # nested dict -> compute nested average
                 if isinstance(value, dict):
                     nested = []
                     for k, v in value.items():
@@ -1094,13 +986,9 @@ with tab1:
                         if s is not None:
                             nested.append(s)
                     return round(sum(nested) / len(nested), 3) if nested else None
-
-                # lists -> attempt to score each item (presence or nested)
                 if isinstance(value, list):
                     if not value:
                         return None
-                    # if list of strings/images -> treat presence as full
-                    # else try to score items
                     scores = []
                     for itm in value:
                         if isinstance(itm, (str, int, float)):
@@ -1121,18 +1009,15 @@ with tab1:
                             if nested_score is not None:
                                 scores.append(nested_score)
                     return round(sum(scores) / len(scores), 3) if scores else None
-
                 # None or empty string -> no score
                 if value is None:
                     return None
                 vstr = str(value).strip()
                 if vstr == "":
                     return None
-
                 # If key is presence only -> 100%
                 if key.lower() in PRESENCE_ONLY:
                     return 1.0
-
                 # If it's a numeric-like string or number -> try to interpret
                 try:
                     num = float(vstr.replace(",", "").replace("%", ""))
@@ -1145,36 +1030,26 @@ with tab1:
                     return 0.9 if num > 0 else 0.0
                 except Exception:
                     pass
-                
                 # Lowercase textual mapping
                 key_lower = vstr.lower()
                 if key_lower in condition_map:
                     return condition_map[key_lower]
-
                 # Some common multi-word matching
                 for kword, score in condition_map.items():
                     if kword in key_lower:
                         return score
-
-                # Unknown string - give neutral mid score (0.7) instead of high 0.95
-                # This avoids single unrecognized field from pulling section to 70-95% incorrectly.
                 return 0.7
-
             # iterate and compute
             scores = []
             for k, v in section_dict.items():
                 s = score_value(k, v)
                 if s is not None:
                     scores.append(s)
-
             if not scores:
                 return 0.0
-
             # final percent 0-100
             percent = round((sum(scores) / len(scores)) * 100, 1)
             return percent
-
-
         # --- Now compute section scores using the new function ---
         highlights_completion = calculate_condition_score(
             highlights, exclude_fields=["hilight_image_b64", "highlight_images"]
@@ -1185,7 +1060,6 @@ with tab1:
         car_body_completion = calculate_condition_score(car_body.get("panels", {}))
         exterior_completion = calculate_condition_score(exterior_data)
         mechanical_completion = calculate_condition_score(mechanical, exclude_fields=["mechanical_comments"])
-        
         # handle suspension (both parts merged)
         suspension_data = {}
         if "shock_absorbers" in suspension:
@@ -1193,13 +1067,11 @@ with tab1:
         if "axles" in suspension:
             suspension_data.update(suspension["axles"])
         suspension_completion = calculate_condition_score(suspension_data)
-        
         electrical_completion = calculate_condition_score(electrical, exclude_fields=["electrical_comments"])
         tires_completion = calculate_condition_score(tires, exclude_fields=["comments"])
         accessories_completion = calculate_condition_score(accessories)
         test_drive_completion = calculate_condition_score(test_drive, exclude_fields=["comments"])
         final_completion = calculate_condition_score(final)
-        
         # --- Completion dictionary ---
         completion = {
             "highlights": highlights_completion,
@@ -1216,14 +1088,10 @@ with tab1:
             "test_drive": test_drive_completion,
             "final": final_completion
         }
-        
         # --- Calculate overall condition ---
         all_scores = [v for v in completion.values() if v > 0]
         overall_condition = round(sum(all_scores) / len(all_scores), 1) if all_scores else 0
         
-
-
-        # --- ✅ Calculate Overall Vehicle Condition Percentage ---
         section_scores = [v for v in completion.values() if isinstance(v, (int, float))]
         if section_scores:
             overall_condition_percent = round(sum(section_scores) / len(section_scores), 1)
@@ -1235,29 +1103,19 @@ with tab1:
             if not valid_values:
                 return 0
             return round(sum(valid_values) / len(valid_values), 1)
-        import base64
 
         with open("CompanyLogo.jpg", "rb") as img_file:
             logo_base64 = base64.b64encode(img_file.read()).decode('utf-8')
 
         with open(TEMPLATE_PATH , "r", encoding='utf-8') as f:
             template = Template(f.read())
-
-        import re
-
         structured_car_body_panels = {}
 
         for panel_name, condition in car_body_panels.items():
-            # Normalize panel name:
-            # 1. Lowercase
-            # 2. Replace spaces, hyphens, and slashes with underscores
-            # 3. Remove any double underscores
             normalized_key = re.sub(r'[-/]', '_', panel_name.lower().replace(" ", "_"))
             normalized_key = re.sub(r'__+', '_', normalized_key)
-
             # Append "_comment"
             comment_key = f"{normalized_key}_comment"
-
             # Get the comment safely
             comment_text = car_body_comments.get(comment_key, "")
 
@@ -1265,8 +1123,6 @@ with tab1:
                 "condition": condition,
                 "comment": comment_text
             }
-        import base64
-
         # --- Handle Body Evaluation Images ---
         body_images_base64 = []
 
@@ -1278,8 +1134,6 @@ with tab1:
                     body_images_base64.append(f"data:image/jpeg;base64,{encoded}")
                 except Exception as e:
                     st.warning(f"Error loading {uploaded_file.name}: {e}")
-
-
         # --- Render the HTML template ---
         html = template.render(
             date=datetime.now().strftime("%d-%b-%Y"),
@@ -1307,8 +1161,6 @@ with tab1:
             logo_base64=logo_base64,
             body_images=body_images_base64
         )
-
-        
         # --- Convert to bytes for download ---
         report_bytes = html.encode("utf-8")
         report_filename = f"{make}_{model}_report.html"
@@ -1325,7 +1177,6 @@ with tab1:
             }
             </style>
             """, unsafe_allow_html=True)
-
         # --- Download button ---
         st.download_button(
             label="📥 Download Report",
@@ -1333,6 +1184,5 @@ with tab1:
             file_name=report_filename,
             mime="text/html"
         )
-    
         st.success("✅ Report ready for download!")
         st.balloons()

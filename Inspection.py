@@ -993,7 +993,7 @@ with tab1:
                 "worn seats": 0.45,
                 "bad interior": 0.2,
                 "broken panel": 0.15,
-                "loose panel": 0.4,-
+                "loose panel": 0.4,
                 "working": 0.95,
                 "smooth": 0.95,
                 "strong": 0.9,

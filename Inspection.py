@@ -944,7 +944,11 @@ with tab1:
                 "registration_type", "chassis_number", "engine_number", "color_code",
                 "reference_id", "pickup_location", "inspector_name"
             }
-            condition_map = {
+            condition_map = {        
+                "total original": 1.0,
+                "repainted only": 0.8,
+                "repaired with poligated": 0.6,
+                "repaired with dry dent": 0.5,
                 "excellent": 1.0,
                 "like new": 1.0,
                 "Original": 0.95,
@@ -1057,7 +1061,12 @@ with tab1:
         car_details_completion = calculate_condition_score(car_details)
         documents_completion = calculate_condition_score(documents)
         interior_completion = calculate_condition_score(interior, exclude_fields=["interior_comments"])
-        car_body_completion = calculate_condition_score(car_body.get("panels", {}))
+        filtered_panels = {
+            k: v for k, v in car_body.get("panels", {}).items()
+            if "comment" not in k.lower()
+        }
+
+        car_body_completion = calculate_condition_score(filtered_panels)
         exterior_completion = calculate_condition_score(exterior_data)
         mechanical_completion = calculate_condition_score(mechanical, exclude_fields=["mechanical_comments"])
         # handle suspension (both parts merged)
